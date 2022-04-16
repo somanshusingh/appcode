@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<title>Project App</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<style>
+			
+			body {
+				background-image: url('https://somanshusingh.github.io/assets/img/404-error.png');
+				background-repeat: no-repeat;
+				background-attachment: fixed; 
+				background-position: center;
+			}
+			.header{
+				width:100%;
+				box-shadow: 0px 2px 4px rgba(0,0,0,0.3);
+				padding-left:45%;
+			}
+			.loader{
+				width: 350px;
+				padding-top: 150px;
+				padding-left: 40%;
+			}
+			.logo{
+				padding:8px 50px;
+				height:60px;
+			}
+			.mainContetnt{
+				width:95%;
+				margin:50px auto;
+				padding:10px;
+				text-align:center;
+			}
+			.mainContetnt input{
+				width:280px;
+				border-radius:6px;
+				border:2px solid gray;
+				padding:7px;
+			}
+			.cambtn{
+				display:inline-block;
+				width:150px;
+				border:2px solid #c0c0c0;
+				border-radius:6px;
+				padding:10px 10px;
+				box-shadow:0 0 10px rgba(0,0,0,0.6);
+				margin-top:50px;
+				font-weight:bold;
+				background:#fff;
+			}
+			.srchIcon{
+				font-size:18px;
+				margin-left: -26px;
+				background: #c1c1c1;
+				padding: 4px 4px 7px 4px;
+			}
+            .ui-autocomplete {
+                background-color: white;
+                box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 4px;
+                width: 20%;
+                margin: 0px auto;
+                left: 0px !important;
+				height : 100px;
+				overflow-y :auto;
+            }
+
+            .ui-menu .ui-menu-item {
+                margin: 5px;
+                padding: 0;
+                width: 100%;
+                font-family: sans-serif;
+                font-size: 1em; 
+            }
+            @media only screen and (max-width: 768px) {
+                .mainContetnt input{
+				    width: 90%;
+				    border-radius:6px;
+				    border:2px solid gray;
+				    padding:7px;
+			    }
+				.loader{
+					width: 300px;
+					padding-top: 150px;
+					padding-left: 10%;
+				}
+				.header{
+					padding-left:30%;
+				}
+                .ui-autocomplete {
+                    background-color: white;
+                    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 4px;
+                    width: 90%;
+                    margin: 0px auto;
+                    left: 0px !important;
+                }
+                
+            }
+            .ui-helper-hidden-accessible { display:none;}
+            .Error {
+                border: 1px solid red !important;
+            }
+		</style>
+  </head>
+  <body>
+<div class="server_text logo">
+	<!-- <h3>404. That’s an error.</h3>
+	<p>The requested URL was not found on this server.</p>
+	<p>That’s all we know.</p> -->
+</div>
+	<script>
+	document.addEventListener('contextmenu', event => event.preventDefault());
+	$( document ).ready(function() {
+		$('.loaderDiv').fadeIn();
+		setTimeout(function(){
+			$('.loaderDiv').hide();
+			$('.mainDiv').fadeIn();
+		}, 2000);
+	});
+	
+
+
+
+</script>
+  </body>
+  </html>
