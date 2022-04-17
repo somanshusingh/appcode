@@ -3,7 +3,7 @@ const router = express.Router();
 //const dbo = require('../models/db');
 
 router.post('/post_service', (req, res) => {
-    res.send(req.body);
+    res.send(req.body);//send response
 });
 router.get('/get_service', (req, res) => {
     try{
