@@ -4,19 +4,20 @@ const appRoot = path.dirname(require.main.filename);
 
 // get SQL DB driver connection
 const db = require("../models/db");
+const tableName = 'users';
 
 module.exports.controller = function (app) {
   app.post("/registration/user", (req, res) => {
     try {
       let sql =
-        "CREATE TABLE users(UserId VARCHAR(10) NOT NULL, Password VARCHAR(25) NOT NULL, Name VARCHAR(50),Mobile BIGINT, Email VARCHAR(50),Address VARCHAR(150),Role VARCHAR(10), Status VARCHAR(10), Created_By VARCHAR(50),Created_On DATE,Modified_By VARCHAR(50),Modified_On DATE, PRIMARY KEY(UserId))";
+        `CREATE TABLE ${tableName}(UserId VARCHAR(10) NOT NULL, Password VARCHAR(25) NOT NULL, Name VARCHAR(50),Mobile BIGINT, Email VARCHAR(50),Address VARCHAR(150),Role VARCHAR(10), Status VARCHAR(10), Created_By VARCHAR(50),Created_On DATE,Modified_By VARCHAR(50),Modified_On DATE, PRIMARY KEY(UserId))`;
       db.query(sql, (err) => {
         try {
           if (err) {
             if (
               err &&
               err.sqlMessage &&
-              err.sqlMessage === "Table 'users' already exists"
+              err.sqlMessage === `Table '${tableName}' already exists`
             ) {
               //code here
             } else {
@@ -46,7 +47,7 @@ module.exports.controller = function (app) {
               ? reqObject.Modified_On
               : moment().format("YYYY-MM-DD hh:mm:ss"),
           };
-          let sql = "INSERT INTO users SET ?";
+          let sql = `INSERT INTO ${tableName} SET ?`;
           let query = db.query(sql, post, (err) => {
             if (err) {
               if (err && err.code && err.code === "ER_DUP_ENTRY") {
@@ -73,7 +74,7 @@ module.exports.controller = function (app) {
   app.post("/registration/signin", (req, res) => {
     try {
       const reqObject = req.body;
-      let sql = `SELECT * FROM users where UserId = "${reqObject.UserId}" AND Password = "${reqObject.Password}"`;
+      let sql = `SELECT * FROM ${tableName} where UserId = "${reqObject.UserId}" AND Password = "${reqObject.Password}"`;
       let query = db.query(sql, (err, row) => {
         if (err) {
           res.json({ status: 0, msg: err });
@@ -95,7 +96,7 @@ module.exports.controller = function (app) {
       const reqObject = req.body;
       let newPassword = reqObject.Password;
       let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
-      let sql = `UPDATE users SET Password = '${newPassword}',Modified_By = '${reqObject.Modified_By}',Modified_On = '${current_date}'  WHERE UserId = '${reqObject.UserId}'`;
+      let sql = `UPDATE ${tableName} SET Password = '${newPassword}',Modified_By = '${reqObject.Modified_By}',Modified_On = '${current_date}'  WHERE UserId = '${reqObject.UserId}'`;
       let query = db.query(sql, (err, row) => {
         if (err) {
           res.json({ status: 0, msg: err });
