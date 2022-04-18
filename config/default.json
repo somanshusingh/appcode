@@ -1,12 +1,19 @@
 {
-    "db": {
+    "db_local": {
         "host": "localhost",
         "port": 3306,
         "database": "appdb",
         "user": "root",
         "password": "123456789"       
     },
+    "db": {
+        "host": "remotemysql.com",
+        "port": 3306,
+        "database": "BaVbqx9kj1",
+        "user": "BaVbqx9kj1",
+        "password": "Xtjit1gTAu"       
+    },
     "environment": {
-        "name": "Development"
+        "name": "Production"
     }
 }
