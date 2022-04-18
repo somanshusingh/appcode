@@ -106,7 +106,6 @@ module.exports.controller = function (app) {
               }
           }
           updateQuery = updateQuery.substring(0, updateQuery.length - 1);
-          console.log(updateQuery);
           let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE VehicleNo = '${VehicleNo}'`;
           let query = db.query(sql, (err, row) => {
             if (err) {
