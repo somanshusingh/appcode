@@ -13,4 +13,8 @@ con.connect(function (err) {
   console.log("SQL DB Connected!");
 });
 
+setInterval(function () {
+  con.query('SELECT 1');
+}, 5000);
+
 module.exports = con;
