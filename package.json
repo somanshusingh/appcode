@@ -5,6 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "config": "^3.3.6",
+    "cors": "^2.8.5",
     "csv-parse": "^5.0.3",
     "csv-parser": "^3.0.0",
     "ejs": "^3.1.6",
