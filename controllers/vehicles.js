@@ -32,7 +32,7 @@ module.exports.controller = function (app) {
                 Insurance_exp_date: reqObject.Insurance_exp_date,
                 PUC_exp_date: reqObject.PUC_exp_date,
                 VehicleType: reqObject.VehicleType,
-                Status: reqObject.Status ? "Active" : reqObject.Status,
+                Status: "Active",
                 Created_By: reqObject.Created_By
                   ? reqObject.Created_By
                   : '',
@@ -70,11 +70,15 @@ module.exports.controller = function (app) {
         }
       });
 
-    app.get('/vehicle/view/:VehicleNo', (req, res)=>{
+    app.get('/vehicle/view/:VehicleNo?', (req, res)=>{
         try{
-            if(req.params && req.params.VehicleNo){
+            //if(req.params && req.params.VehicleNo){
                 const VehicleNo = req.params.VehicleNo ? req.params.VehicleNo : '';
-                let sql = `SELECT * FROM ${tableName} where VehicleNo = "${VehicleNo}"`;
+                let findQuery = ` where VehicleNo = "${VehicleNo}"`;
+                if (VehicleNo === ''){
+                  findQuery = "";
+                }
+                let sql = `SELECT * FROM ${tableName}${findQuery}`;
                 let query = db.query(sql, (err, row) => {
                     if (err) {
                     res.json({ status: 0, msg: err });
@@ -82,13 +86,14 @@ module.exports.controller = function (app) {
                     if (row && row.length && row.length > 0) {
                         res.json({ status: 1, msg: row});
                     } else {
+                      if (VehicleNo === ''){
+                        res.json({ status: 0, msg: `vehicle not exist` });
+                      } else {
                         res.json({ status: 0, msg: `vehicle no ${VehicleNo} not exist` });
+                      }
                     }
                     }
                 });
-            } else {
-                res.json({ status: 0, msg: `vehicle no ${VehicleNo} invalid` });
-            }
         }catch (ex) {
             res.json({ status: 100, msg: ex.stack });
           }
