@@ -33,7 +33,7 @@ module.exports.controller = function (app) {
             Email: reqObject.Email,
             Address: reqObject.Address,
             Role: reqObject.Role ? "Admin" : reqObject.Role,
-            Status: reqObject.Status ? "Active" : reqObject.Status,
+            Status: "Active",
             Created_By: reqObject.Created_By
               ? reqObject.Created_By
               : reqObject.UserId,
@@ -74,15 +74,20 @@ module.exports.controller = function (app) {
   app.post("/registration/signin", (req, res) => {
     try {
       const reqObject = req.body;
-      let sql = `SELECT * FROM ${tableName} where UserId = "${reqObject.UserId}" AND Password = "${reqObject.Password}"`;
+      let sql = `SELECT * FROM ${tableName} where  Status = "Active" AND UserId = "${reqObject.UserId}" AND Password = "${reqObject.Password}"`;
       let query = db.query(sql, (err, row) => {
         if (err) {
           res.json({ status: 0, msg: err });
         } else {
           if (row && row.length && row.length > 0) {
-            res.json({ status: 1, msg: "user exist" });
+            let userResponse = {
+              UserId : row[0].UserId,
+              Role : row[0].Role,
+              Name : row[0].Name
+            }
+            res.json({ status: 1, msg: userResponse });
           } else {
-            res.json({ status: 0, msg: "UserID/Password not exist" });
+            res.json({ status: 0, msg: "UserID/Password not exist/active" });
           }
         }
       });
