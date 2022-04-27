@@ -7,6 +7,77 @@ const db = require("../models/db");
 const tableName = 'users';
 
 module.exports.controller = function (app) {
+  
+  //validation start here
+
+  let validateSignIn = (req, res, next)=>{
+    try{
+      if (req.url && req.url.includes('signin')){
+        const reqObject = req.body;
+        if (reqObject.hasOwnProperty('UserId') && reqObject.hasOwnProperty('Password')){
+          if (reqObject.UserId){
+            if((reqObject.UserId).length < 3 || (reqObject.UserId).length > 10){
+              res.json({ status: 0, msg: "UserId min 3 character and max 10 character"});
+            }else{
+              if (reqObject.Password){
+                if((reqObject.Password).length < 5 || (reqObject.Password).length > 50){
+                    res.json({ status: 0, msg: "Password min 5 character and max 50 character"});
+                  }else{
+                    return next();
+                  }
+                } else{
+                  res.json({ status: 0, msg: "Password value is null/undefined/blank"});
+                }
+            }
+          } else{
+            res.json({ status: 0, msg: "UserId value is null/undefined/blank"});
+          }
+        } else{
+          res.json({ status: 0, msg: "in request UserId/Password missing"});
+        }
+      } else{
+        res.json({ status: 0, msg: {  error: 'Invalid request', url: req.url, req : req.body } });
+      }
+    } catch(ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
+  }
+
+  let validateUpdate = (req, res, next)=>{
+      try{
+        if (req.url && req.url.includes('update')){
+          const reqObject = req.body;
+          if (reqObject.hasOwnProperty('UserId') && reqObject.hasOwnProperty('Password') && reqObject.hasOwnProperty('Modified_By')){
+            if (reqObject.UserId){
+              if((reqObject.UserId).length < 3 || (reqObject.UserId).length > 10){
+                res.json({ status: 0, msg: "UserId min 3 character and max 10 character"});
+              }else{
+                if (reqObject.Password){
+                  if((reqObject.Password).length < 5 || (reqObject.Password).length > 50){
+                      res.json({ status: 0, msg: "Password min 5 character and max 50 character"});
+                    }else{
+                      return next();
+                    }
+                  } else{
+                    res.json({ status: 0, msg: "Password value is null/undefined/blank"});
+                  }
+              }
+            } else{
+              res.json({ status: 0, msg: "UserId value is null/undefined/blank"});
+            }
+          } else{
+            res.json({ status: 0, msg: "in request UserId/Password/Modified_By missing"});
+          }
+        } else{
+          res.json({ status: 0, msg: {  error: 'Invalid request', url: req.url, req : req.body } });
+        }
+      } catch(ex) {
+        res.json({ status: 100, msg: ex.stack });
+      }
+    }
+
+  //validation end here
+
   app.post("/registration/user", (req, res) => {
     try {
       let sql =
@@ -71,7 +142,7 @@ module.exports.controller = function (app) {
     }
   });
 
-  app.post("/registration/signin", (req, res) => {
+  app.post("/registration/signin", validateSignIn, (req, res) => {
     try {
       const reqObject = req.body;
       let sql = `SELECT * FROM ${tableName} where  Status = "Active" AND UserId = "${reqObject.UserId}" AND Password = "${reqObject.Password}"`;
@@ -96,7 +167,7 @@ module.exports.controller = function (app) {
     }
   });
 
-  app.post("/registration/update", (req, res) => {
+  app.post("/registration/update", validateUpdate, (req, res) => {
     try {
       const reqObject = req.body;
       let newPassword = reqObject.Password;
@@ -118,4 +189,6 @@ module.exports.controller = function (app) {
     }
   });
   //code end here
+  
+
 };
