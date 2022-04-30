@@ -188,6 +188,36 @@ module.exports.controller = function (app) {
       res.json({ status: 100, msg: ex.stack });
     }
   });
+
+  
+  app.get('/registration/user/view/:UserID?', (req, res)=>{
+      try{
+          //if(req.params && req.params.VehicleNo){
+              const UserID = req.params.UserID ? req.params.UserID : '';
+              let findQuery = ` where UserID = "${UserID}"`;
+              if (UserID === ''){
+                findQuery = "";
+              }
+              let sql = `SELECT * FROM ${tableName}${findQuery}`;
+              let query = db.query(sql, (err, row) => {
+                  if (err) {
+                  res.json({ status: 0, msg: err });
+                  } else {
+                  if (row && row.length && row.length > 0) {
+                      res.json({ status: 1, msg: row});
+                  } else {
+                    if (UserID === ''){
+                      res.json({ status: 0, msg: `User not exist` });
+                    } else {
+                      res.json({ status: 0, msg: `UserID ${UserID} not exist` });
+                    }
+                  }
+                  }
+              });
+      }catch (ex) {
+          res.json({ status: 100, msg: ex.stack });
+        }
+  });
   //code end here
   
 

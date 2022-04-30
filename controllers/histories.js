@@ -67,7 +67,37 @@ module.exports.controller = function (app) {
       }
     });
 
-    app.post('/history/outside_transport', (req, res)=>{
+    
+  app.get('/history/inhouse_transport/view/:BookNo?', (req, res)=>{
+      try{
+          //if(req.params && req.params.VehicleNo){
+              const BookNo = req.params.BookNo ? req.params.BookNo : '';
+              let findQuery = ` where BookNo = "${BookNo}"`;
+              if (BookNo === ''){
+                findQuery = "";
+              }
+              let sql = `SELECT * FROM ${tableName}${findQuery}`;
+              let query = db.query(sql, (err, row) => {
+                  if (err) {
+                  res.json({ status: 0, msg: err });
+                  } else {
+                  if (row && row.length && row.length > 0) {
+                      res.json({ status: 1, msg: row});
+                  } else {
+                    if (BookNo === ''){
+                      res.json({ status: 0, msg: `No booking available` });
+                    } else {
+                      res.json({ status: 0, msg: `BookNo ${BookNo} not exist` });
+                    }
+                  }
+                  }
+              });
+      }catch (ex) {
+          res.json({ status: 100, msg: ex.stack });
+        }
+  });
+
+  app.post('/history/outside_transport', (req, res)=>{
         try{
           let sql =
               `CREATE TABLE ${newTableName}(BookNo VARCHAR(25) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Trip_No INT, Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, PRIMARY KEY(BookNo))`;
@@ -128,6 +158,35 @@ module.exports.controller = function (app) {
         } catch(ex) {
           res.json({ status: 100, msg: ex.stack });
         }
-      });
+  });
+
+  app.get('/history/outside_transport/view/:BookNo?', (req, res)=>{
+      try{
+          //if(req.params && req.params.VehicleNo){
+              const BookNo = req.params.BookNo ? req.params.BookNo : '';
+              let findQuery = ` where BookNo = "${BookNo}"`;
+              if (BookNo === ''){
+                findQuery = "";
+              }
+              let sql = `SELECT * FROM ${newTableName}${findQuery}`;
+              let query = db.query(sql, (err, row) => {
+                  if (err) {
+                  res.json({ status: 0, msg: err });
+                  } else {
+                  if (row && row.length && row.length > 0) {
+                      res.json({ status: 1, msg: row});
+                  } else {
+                    if (BookNo === ''){
+                      res.json({ status: 0, msg: `No booking available` });
+                    } else {
+                      res.json({ status: 0, msg: `BookNo ${BookNo} not exist` });
+                    }
+                  }
+                  }
+              });
+      }catch (ex) {
+          res.json({ status: 100, msg: ex.stack });
+        }
+  });
     //code end here
 };
