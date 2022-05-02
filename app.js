@@ -7,9 +7,24 @@ const bodyParser = require("body-parser");
 const util = require("util");
 const fs = require("fs");
 const cors = require('cors');
-
+const db = require("./models/db");
+const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 // get SQL DB driver connection
 //const db = require("./models/db");
+//session
+
+
+const sessionStore = new MySQLStore({}, db);
+const halfHours = 1000 * 60 * 60 * 0.5;
+app.use(session({
+    secret: "thisismysecrctekey",
+    resave: false, 
+    saveUninitialized:true,
+    cookie: { maxAge: halfHours },
+    store: sessionStore 
+}));
+// end session
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

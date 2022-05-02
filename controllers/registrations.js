@@ -156,6 +156,9 @@ module.exports.controller = function (app) {
               Role : row[0].Role,
               Name : row[0].Name
             }
+            req.session.UserId =  userResponse.UserId;
+            req.session.Role =  userResponse.Role;
+            req.session.Name =  userResponse.Name;
             res.json({ status: 1, msg: userResponse });
           } else {
             res.json({ status: 0, msg: "UserID/Password not exist/active" });
