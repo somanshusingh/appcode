@@ -10,7 +10,7 @@ module.exports.controller = function (app) {
     app.post("/vehicle/registration", (req, res) => {
         try {
           let sql =
-            `CREATE TABLE ${tableName}(VehicleNo VARCHAR(15) NOT NULL, Make VARCHAR(25), Model VARCHAR(25),Insurance_exp_date DATE, PUC_exp_date DATE, VehicleType VARCHAR(25), Status VARCHAR(10), Created_By VARCHAR(50), Created_On DATE, Modified_By VARCHAR(50), Modified_On DATE, PRIMARY KEY(VehicleNo))`;
+            `CREATE TABLE ${tableName}(VehicleNo VARCHAR(15) NOT NULL, Make VARCHAR(25), Model VARCHAR(25),Insurance_exp_date DATE, PUC_exp_date DATE, VehicleType VARCHAR(25), Status VARCHAR(10), Source VARCHAR(10), Created_By VARCHAR(50), Created_On DATE, Modified_By VARCHAR(50), Modified_On DATE, PRIMARY KEY(VehicleNo))`;
           db.query(sql, (err) => {
             try {
               if (err) {
@@ -33,6 +33,7 @@ module.exports.controller = function (app) {
                 PUC_exp_date: reqObject.PUC_exp_date,
                 VehicleType: reqObject.VehicleType,
                 Status: "Active",
+                Source : reqObject.Source ? reqObject.Source : "InBound",
                 Created_By: reqObject.Created_By
                   ? reqObject.Created_By
                   : '',
