@@ -99,14 +99,14 @@ module.exports.controller = function (app) {
           }
     })
 
-    app.post("/vehicle/update", (req, res) => {
+    app.post("/vehicle/data/update", (req, res) => {
         try {
           const reqObject = req.body;
           let VehicleNo = reqObject.VehicleNo;
           let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
           let updateQuery = `Modified_On = '${current_date}', Modified_By='${reqObject.Modified_By}',`;
           for (const k in reqObject){
-              if (k !== 'Modified_On' || k !== "Modified_By"){
+              if (k !== "Modified_On" || k !== "Modified_By"){
                 updateQuery += `${k} = '${reqObject[k]}',`
               }
           }

@@ -8,7 +8,7 @@ const tableName = 'inhouse_transport_history';
 const newTableName = 'outside_transport_history'
 
 module.exports.controller = function (app) {
-    app.post('/history/inhouse_transport', (req, res)=>{
+  app.post('/history/inhouse_transport', (req, res)=>{
       try{
         let sql =
             `CREATE TABLE ${tableName}(BookNo VARCHAR(25) NOT NULL, VehicleNo VARCHAR(15), Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Trip_No INT, Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, PRIMARY KEY(BookNo))`;
@@ -65,8 +65,7 @@ module.exports.controller = function (app) {
       } catch(ex) {
         res.json({ status: 100, msg: ex.stack });
       }
-    });
-
+  });
     
   app.get('/history/inhouse_transport/view/:BookNo?', (req, res)=>{
       try{
@@ -95,6 +94,36 @@ module.exports.controller = function (app) {
       }catch (ex) {
           res.json({ status: 100, msg: ex.stack });
         }
+  });
+
+  app.post("/history/inhouse_transport/update", (req, res) => {
+    try {
+      const reqObject = req.body;
+      let BookNo = reqObject.BookNo;
+      let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
+      //let updateQuery = `Issued_Date = '${current_date}',`;
+      let updateQuery = ``;
+      for (const k in reqObject){
+          if (k !== "Issued_Date" || k !== "Modified_By"){
+            updateQuery += `${k} = '${reqObject[k]}',`
+          }
+      }
+      updateQuery = updateQuery.substring(0, updateQuery.length - 1);
+      let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE BookNo = '${BookNo}'`;
+      let query = db.query(sql, (err, row) => {
+        if (err) {
+          res.json({ status: 0, msg: err });
+        } else {
+          if (row && row.affectedRows && row.affectedRows > 0) {
+            res.json({ status: 1, msg: "date updated" });
+          } else {
+            res.json({ status: 0, msg: "data not updated" });
+          }
+        }
+      });
+    } catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
   });
 
   app.post('/history/outside_transport', (req, res)=>{
@@ -187,6 +216,36 @@ module.exports.controller = function (app) {
       }catch (ex) {
           res.json({ status: 100, msg: ex.stack });
         }
+  });
+
+  app.post("/history/outside_transport/update", (req, res) => {
+    try {
+      const reqObject = req.body;
+      let BookNo = reqObject.BookNo;
+      let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
+      //let updateQuery = `Issued_Date = '${current_date}',`;
+      let updateQuery = ``;
+      for (const k in reqObject){
+          if (k !== "Issued_Date"){
+            updateQuery += `${k} = '${reqObject[k]}',`
+          }
+      }
+      updateQuery = updateQuery.substring(0, updateQuery.length - 1);
+      let sql = `UPDATE ${newTableName} SET ${updateQuery} WHERE BookNo = '${BookNo}'`;
+      let query = db.query(sql, (err, row) => {
+        if (err) {
+          res.json({ status: 0, msg: err });
+        } else {
+          if (row && row.affectedRows && row.affectedRows > 0) {
+            res.json({ status: 1, msg: "date updated" });
+          } else {
+            res.json({ status: 0, msg: "data not updated" });
+          }
+        }
+      });
+    } catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
   });
     //code end here
 };

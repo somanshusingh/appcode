@@ -189,6 +189,56 @@ module.exports.controller = function (app) {
     }
   });
 
+  app.post("/registration/pwd/update", validateUpdate, (req, res) => {
+    try {
+      const reqObject = req.body;
+      let newPassword = reqObject.Password;
+      let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
+      let sql = `UPDATE ${tableName} SET Password = '${newPassword}',Modified_By = '${reqObject.Modified_By}',Modified_On = '${current_date}'  WHERE UserId = '${reqObject.UserId}'`;
+      let query = db.query(sql, (err, row) => {
+        if (err) {
+          res.json({ status: 0, msg: err });
+        } else {
+          if (row && row.affectedRows && row.affectedRows > 0) {
+            res.json({ status: 1, msg: "password updated" });
+          } else {
+            res.json({ status: 0, msg: "Password not updated" });
+          }
+        }
+      });
+    } catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
+  });
+
+  app.post("/registration/data/update", (req, res) => {
+    try {
+      const reqObject = req.body;
+      let UserId = reqObject.UserId;
+      let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
+      let updateQuery = `Modified_On = '${current_date}', Modified_By='${reqObject.Modified_By}',`;
+      for (const k in reqObject){
+          if (k !== "Modified_On" || k !== "Modified_By"){
+            updateQuery += `${k} = '${reqObject[k]}',`
+          }
+      }
+      updateQuery = updateQuery.substring(0, updateQuery.length - 1);
+      let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE UserId = '${UserId}'`;
+      let query = db.query(sql, (err, row) => {
+        if (err) {
+          res.json({ status: 0, msg: err });
+        } else {
+          if (row && row.affectedRows && row.affectedRows > 0) {
+            res.json({ status: 1, msg: "User date updated" });
+          } else {
+            res.json({ status: 0, msg: "User data not updated" });
+          }
+        }
+      });
+    } catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
+  });
   
   app.get('/registration/user/view/:UserID?', (req, res)=>{
       try{
@@ -218,6 +268,8 @@ module.exports.controller = function (app) {
           res.json({ status: 100, msg: ex.stack });
         }
   });
+
+
   //code end here
   
 
