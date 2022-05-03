@@ -193,6 +193,7 @@ module.exports.controller = function (app) {
                       "PUC_exp_date": reqObject.PUC_exp_date,
                       "VehicleType": "",
                       "Created_By": reqObject.Issued_By,
+                      "Modified_By": reqObject.Issued_By,
                       "Source": "OutBound"
                     },
                     headers: {
