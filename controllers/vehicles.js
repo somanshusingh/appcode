@@ -90,7 +90,7 @@ module.exports.controller = function (app) {
                       if (VehicleNo === ''){
                         res.json({ status: 0, msg: `vehicle not exist` });
                       } else {
-                        res.json({ status: 0, msg: `vehicle no ${VehicleNo} not exist` });
+                        res.json({ status: 0, msg: `vehicle no: ${VehicleNo} does not exist` });
                       }
                     }
                     }

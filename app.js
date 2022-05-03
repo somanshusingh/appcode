@@ -19,10 +19,10 @@ const sessionStore = new MySQLStore({}, db);
 const halfHours = 1000 * 60 * 60 * 0.5;
 app.use(session({
     secret: "thisismysecrctekey",
-    resave: false, 
-    saveUninitialized:true,
-    cookie: { maxAge: halfHours },
-    store: sessionStore 
+    store: sessionStore,
+    resave: true, 
+    saveUninitialized:false,
+    cookie: { maxAge: halfHours }
 }));
 // end session
 

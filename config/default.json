@@ -14,6 +14,7 @@
         "password": "Xtjit1gTAu"       
     },
     "environment": {
-        "name": "Production"
+        "name": "Production",
+        "weburl":"https://jbmapp.herokuapp.com"
     }
 }

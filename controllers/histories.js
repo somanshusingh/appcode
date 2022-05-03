@@ -1,5 +1,6 @@
 const path = require("path");
 const moment = require("moment");
+const config = require("config");
 const appRoot = path.dirname(require.main.filename);
 
 // get SQL DB driver connection
@@ -182,6 +183,29 @@ module.exports.controller = function (app) {
                     res.json({ status: 1, msg: "added in history" });
                   }
                 });
+                if(reqObject.hasOwnProperty('Vehicle') && reqObject.Vehicle === false){
+                  let objVehicleData = {
+                    data: {
+                      "VehicleNo": reqObject.VehicleNo,
+                      "Make": reqObject.Make,
+                      "Model": reqObject.Model,
+                      "Insurance_exp_date": reqObject.Insurance_exp_date,
+                      "PUC_exp_date": reqObject.PUC_exp_date,
+                      "VehicleType": "",
+                      "Created_By": reqObject.Issued_By,
+                      "Source": "OutBound"
+                    },
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  };
+                  const url_api = config.environment.weburl + "/vehicle/registration";
+                  var Client = require("node-rest-client").Client;
+                  var client = new Client();
+                  client.post(url_api, objVehicleData, function (data, response) {
+                     console.log(data);
+                  });
+                }
               } catch (ex) {
                 res.json({ status: 100, msg: ex.stack });
               }
