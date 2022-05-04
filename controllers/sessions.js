@@ -26,6 +26,9 @@ module.exports.controller = function (app) {
       res.json({ status: 100, msg: ex.stack });
     }
   });
+  app.get("/session/get", (req, res) => {
+    res.json(req.session)
+  });
 
   app.get("/session/logout", (req, res) => {
     try {
