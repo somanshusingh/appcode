@@ -81,7 +81,7 @@ module.exports.controller = function (app) {
   app.post("/registration/user", (req, res) => {
     try {
       let sql =
-        `CREATE TABLE ${tableName}(UserId VARCHAR(10) NOT NULL, Password VARCHAR(25) NOT NULL, Name VARCHAR(50),Mobile BIGINT, Email VARCHAR(50),Address VARCHAR(150),Role VARCHAR(10), Status VARCHAR(10), Created_By VARCHAR(50),Created_On DATE,Modified_By VARCHAR(50),Modified_On DATE, PRIMARY KEY(UserId))`;
+        `CREATE TABLE ${tableName}(UserId VARCHAR(10) NOT NULL, Password VARCHAR(25) NOT NULL, Name VARCHAR(50),Mobile BIGINT, Email VARCHAR(50),Address VARCHAR(150),Role VARCHAR(10), Status VARCHAR(10), Created_By VARCHAR(50),Created_On DATE,Modified_By VARCHAR(50),Modified_On DATE, Allowed_Menu json, PRIMARY KEY(UserId))`;
       db.query(sql, (err) => {
         try {
           if (err) {
@@ -117,6 +117,7 @@ module.exports.controller = function (app) {
             Modified_On: reqObject.Modified_On
               ? reqObject.Modified_On
               : moment().format("YYYY-MM-DD hh:mm:ss"),
+            Allowed_Menu: ((typeof reqObject.Allowed_Menu === "object") && reqObject.Allowed_Menu) ? JSON.stringify(reqObject.Allowed_Menu) : JSON.stringify({})
           };
           let sql = `INSERT INTO ${tableName} SET ?`;
           let query = db.query(sql, post, (err) => {
@@ -154,7 +155,8 @@ module.exports.controller = function (app) {
             let userResponse = {
               UserId : row[0].UserId,
               Role : row[0].Role,
-              Name : row[0].Name
+              Name : row[0].Name,
+              Allowed_Menu : (row[0].Allowed_Menu) ? JSON.parse(row[0].Allowed_Menu) : {}
             }
             req.session.UserId =  userResponse.UserId;
             req.session.Role =  userResponse.Role;
@@ -221,9 +223,13 @@ module.exports.controller = function (app) {
       let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
       let updateQuery = `Modified_On = '${current_date}', Modified_By='${reqObject.Modified_By}',`;
       for (const k in reqObject){
-          if (k !== "Modified_On" || k !== "Modified_By"){
+        if (k === "Allowed_Menu"){
+          updateQuery += `${k} = '${JSON.stringify(reqObject[k])}',`
+        } else{   
+          if (k !== "Modified_On" || k !== "Modified_By" || k !== "Allowed_Menu"){
             updateQuery += `${k} = '${reqObject[k]}',`
           }
+        }
       }
       updateQuery = updateQuery.substring(0, updateQuery.length - 1);
       let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE UserId = '${UserId}'`;
