@@ -81,7 +81,7 @@ module.exports.controller = function (app) {
   app.post("/registration/user", (req, res) => {
     try {
       let sql =
-        `CREATE TABLE ${tableName}(UserId VARCHAR(10) NOT NULL, Password VARCHAR(25) NOT NULL, Name VARCHAR(50),Mobile BIGINT, Email VARCHAR(50),Address VARCHAR(150),Role VARCHAR(10), Status VARCHAR(10), Created_By VARCHAR(50),Created_On DATE,Modified_By VARCHAR(50),Modified_On DATE, Allowed_Menu json, PRIMARY KEY(UserId))`;
+        `CREATE TABLE ${tableName}(UserId VARCHAR(50) NOT NULL, Password VARCHAR(25) NOT NULL, FirstName VARCHAR(50), LastName VARCHAR(50),Mobile BIGINT, Email VARCHAR(50),Address VARCHAR(150),Role VARCHAR(10), Status VARCHAR(10), Created_By VARCHAR(50),Created_On DATE,Modified_By VARCHAR(50),Modified_On DATE, Allowed_Menu json, PRIMARY KEY(UserId))`;
       db.query(sql, (err) => {
         try {
           if (err) {
@@ -97,9 +97,10 @@ module.exports.controller = function (app) {
           }
           const reqObject = req.body;
           let post = {
-            UserId: reqObject.UserId,
+            UserId: reqObject.Email,
             Password: reqObject.Password,
-            Name: reqObject.Name,
+            FirstName: reqObject.FirstName,
+            LastName: reqObject.LastName,
             Mobile: reqObject.Mobile,
             Email: reqObject.Email,
             Address: reqObject.Address,
@@ -125,7 +126,7 @@ module.exports.controller = function (app) {
               if (err && err.code && err.code === "ER_DUP_ENTRY") {
                 res.json({
                   status: 0,
-                  msg: `user ${reqObject.UserId} already exist`,
+                  msg: `user ${reqObject.Email} already exist`,
                 });
               } else {
                 res.json({ status: 0, msg: err });
@@ -155,7 +156,7 @@ module.exports.controller = function (app) {
             let userResponse = {
               UserId : row[0].UserId,
               Role : row[0].Role,
-              Name : row[0].Name,
+              Name : row[0].FirstName +` `+row[0].LastName,
               Allowed_Menu : (row[0].Allowed_Menu) ? JSON.parse(row[0].Allowed_Menu) : {}
             }
             req.session.UserId =  userResponse.UserId;

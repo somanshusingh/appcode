@@ -12,7 +12,7 @@ module.exports.controller = function (app) {
   app.post('/history/inhouse_transport', (req, res)=>{
       try{
         let sql =
-            `CREATE TABLE ${tableName}(Trip_No VARCHAR(25) NOT NULL, VehicleNo VARCHAR(15), Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, PRIMARY KEY(Trip_No))`;
+            `CREATE TABLE ${tableName}(Trip_No VARCHAR(25) NOT NULL, VehicleNo VARCHAR(15), Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), PRIMARY KEY(Trip_No))`;
           db.query(sql, (err) => {
             try {
               if (err) {
@@ -43,7 +43,8 @@ module.exports.controller = function (app) {
                 Tare_Weight : 0,//reqObject.Tare_Weight,
                 Net_Weight : 0,//reqObject.Net_Weight,
                 Vehicle_Mapping: '',//reqObject.Vehicle_Mapping,
-                Qty_Mt_Weight : reqObject.Qty_Mt_Weight
+                Qty_Mt_Weight : reqObject.Qty_Mt_Weight,
+                Status: "open"
               };
               let sql = `INSERT INTO ${tableName} SET ?`;
               let query = db.query(sql, post, (err) => {
@@ -131,7 +132,7 @@ module.exports.controller = function (app) {
   app.post('/history/outside_transport', (req, res)=>{
         try{
           let sql =
-              `CREATE TABLE ${newTableName}(Trip_No VARCHAR(25) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, PRIMARY KEY(Trip_No))`;
+              `CREATE TABLE ${newTableName}(Trip_No VARCHAR(25) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), PRIMARY KEY(Trip_No))`;
             db.query(sql, (err) => {
               try {
                 if (err) {
@@ -166,7 +167,8 @@ module.exports.controller = function (app) {
                   Tare_Weight : 0,//reqObject.Tare_Weight,
                   Net_Weight : 0,//reqObject.Net_Weight,
                   Vehicle_Mapping: '',//reqObject.Vehicle_Mapping,
-                  Qty_Mt_Weight : reqObject.Qty_Mt_Weight
+                  Qty_Mt_Weight : reqObject.Qty_Mt_Weight,
+                  Status: "open"
                 };
                 let sql = `INSERT INTO ${newTableName} SET ?`;
                 let query = db.query(sql, post, (err) => {
