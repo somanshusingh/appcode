@@ -12,7 +12,7 @@ module.exports.controller = function (app) {
   app.post('/history/inhouse_transport', (req, res)=>{
       try{
         let sql =
-            `CREATE TABLE ${tableName}(Trip_No VARCHAR(25) NOT NULL, VehicleNo VARCHAR(15), Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, PRIMARY KEY(Trip_No))`;
+            `CREATE TABLE ${tableName}(Trip_No INT NOT NULL auto_increment, VehicleNo VARCHAR(15), Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20), PRIMARY KEY(Trip_No))`;
           db.query(sql, (err) => {
             try {
               if (err) {
@@ -28,7 +28,6 @@ module.exports.controller = function (app) {
               }
               const reqObject = req.body;
               let post = {
-                Trip_No : reqObject.Trip_No,
                 VehicleNo : reqObject.VehicleNo,
                 Material_Type : reqObject.Material,
                 Material : reqObject.Material,
@@ -46,19 +45,13 @@ module.exports.controller = function (app) {
                 Qty_Mt_Weight : reqObject.Qty_Mt_Weight,
                 Status: "open",
                 LrNumber : reqObject.LrNumber ? reqObject.LrNumber : '',
-                LrDate  : reqObject.LrDate
+                LrDate  : reqObject.LrDate,
+                Card_Number : reqObject.Card_Number ? reqObject.Card_Number : ''
               };
               let sql = `INSERT INTO ${tableName} SET ?`;
               let query = db.query(sql, post, (err) => {
                 if (err) {
-                  if (err && err.code && err.code === "ER_DUP_ENTRY") {
-                    res.json({
-                      status: 0,
-                      msg: `in history trip ${reqObject.Trip_No} already exist`,
-                    });
-                  } else {
                     res.json({ status: 0, msg: err });
-                  }
                 } else {
                   res.json({ status: 1, msg: "added in history" });
                 }
@@ -134,7 +127,7 @@ module.exports.controller = function (app) {
   app.post('/history/outside_transport', (req, res)=>{
         try{
           let sql =
-              `CREATE TABLE ${newTableName}(Trip_No VARCHAR(25) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, PRIMARY KEY(Trip_No))`;
+              `CREATE TABLE ${newTableName}(Trip_No INT NOT NULL auto_increment, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20), PRIMARY KEY(Trip_No))`;
             db.query(sql, (err) => {
               try {
                 if (err) {
@@ -150,7 +143,6 @@ module.exports.controller = function (app) {
                 }
                 const reqObject = req.body;
                 let post = {
-                  Trip_No : reqObject.Trip_No,
                   VehicleNo : reqObject.VehicleNo,
                   Make : reqObject.Make,
                   Model : reqObject.Model,
@@ -172,19 +164,13 @@ module.exports.controller = function (app) {
                   Qty_Mt_Weight : reqObject.Qty_Mt_Weight,
                   Status: "open",
                   LrNumber : reqObject.LrNumber ? reqObject.LrNumber : '',
-                  LrDate  : reqObject.LrDate
+                  LrDate  : reqObject.LrDate,
+                  Card_Number : reqObject.Card_Number ? reqObject.Card_Number : ''
                 };
                 let sql = `INSERT INTO ${newTableName} SET ?`;
                 let query = db.query(sql, post, (err) => {
                   if (err) {
-                    if (err && err.code && err.code === "ER_DUP_ENTRY") {
-                      res.json({
-                        status: 0,
-                        msg: `in history trip ${reqObject.Trip_No} already exist`,
-                      });
-                    } else {
                       res.json({ status: 0, msg: err });
-                    }
                   } else {
                     res.json({ status: 1, msg: "added in history" });
                   }
@@ -280,5 +266,69 @@ module.exports.controller = function (app) {
       res.json({ status: 100, msg: ex.stack });
     }
   });
+
+  app.post('/history/weight/update', (req, res)=>{
+    try{
+        //if(req.params && req.params.VehicleNo){
+            const Trip_No = req.body.Trip_No ? req.body.Trip_No : '';
+            const Weight = (req.body.Weight && isNaN(req.body.Weight) === false) ? parseFloat(req.body.Weight) : 0;
+            const Card_Number = req.body.Card_Number ? req.body.Card_Number : '';
+            const tempTableName = (req.body.trip && req.body.trip === 'out') ? newTableName : tableName;
+            let findQuery = ` where Card_Number = "${Card_Number}"`;
+            if (Trip_No !== ''){
+              findQuery += ` AND  Trip_No = ${Trip_No}`;
+            }
+            let sql = `SELECT * FROM ${tempTableName}${findQuery}`;
+            let query = db.query(sql, (err, row) => {
+                if (err) {
+                res.json({ status: 0, msg: err });
+                } else {
+                if (row && row.length && row.length > 0) {
+                  //res.json({ status: 1, msg: row});
+                  //console.log(row, Weight);
+                  let tempGross_Weight = row[0].Gross_Weight ? row[0].Gross_Weight : 0;
+                  let tempTare_Weight = row[0].Tare_Weight ? row[0].Tare_Weight : 0;
+                  console.log('tempGross_Weight , tempTare_Weight, Weight')
+                  console.log(tempGross_Weight , tempTare_Weight, Weight)
+                  if ((tempGross_Weight || tempGross_Weight === 0 )|| (tempTare_Weight || tempTare_Weight === 0) ){
+                    let updateQuery = ``;
+                    if (tempGross_Weight !== 0 && tempTare_Weight !== 0 )  {
+                      updateQuery = ``;
+                    }else if ((tempGross_Weight && tempGross_Weight !== 0) || (tempGross_Weight !== 0 && tempTare_Weight === 0 ))  {
+                      updateQuery = `Tare_Weight = "${Weight}"`;
+                    }else if ((tempTare_Weight && tempTare_Weight !== 0) || ( tempTare_Weight !== 0 && tempGross_Weight === 0 ))   {
+                      updateQuery = `Gross_Weight = "${Weight}"`
+                    }else if (tempGross_Weight === 0 && tempTare_Weight === 0 )   {
+                      updateQuery = `Gross_Weight = "${Weight}"`
+                    }
+                    if (updateQuery !== ``){
+                      let tempsql = `UPDATE ${tempTableName} SET ${updateQuery} ${findQuery}`;
+                      let nquery = db.query(tempsql, (err, row) => {
+                        if (err) {
+                          res.json({ status: 0, msg: err });
+                        } else {
+                          if (row && row.affectedRows && row.affectedRows > 0) {
+                            res.json({ status: 1, msg: "date updated" });
+                          } else {
+                            res.json({ status: 0, msg: "data not updated" });
+                          }
+                        }
+                      });
+                    } else {
+                      res.json({ status: 0, msg: `Weight not updated` });
+                    }
+                  }else {
+                    res.json({ status: 0, msg: `Weight not updated` });
+                  }
+                } else {
+                  res.json({ status: 0, msg: `Card_Number ${Card_Number} not exist` });
+                }
+                }
+            });
+    }catch (ex) {
+        res.json({ status: 100, msg: ex.stack });
+      }
+});
     //code end here
 };
+

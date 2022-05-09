@@ -49,8 +49,8 @@ module.exports.controller = function (app) {
           const reqObject = req.body;
           if (reqObject.hasOwnProperty('UserId') && reqObject.hasOwnProperty('Password') && reqObject.hasOwnProperty('Modified_By')){
             if (reqObject.UserId){
-              if((reqObject.UserId).length < 3 || (reqObject.UserId).length > 10){
-                res.json({ status: 0, msg: "UserId min 3 character and max 10 character"});
+              if((reqObject.UserId).length < 3 || (reqObject.UserId).length > 50){
+                res.json({ status: 0, msg: "UserId min 3 character and max 50 character"});
               }else{
                 if (reqObject.Password){
                   if((reqObject.Password).length < 5 || (reqObject.Password).length > 50){
