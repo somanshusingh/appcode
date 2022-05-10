@@ -59,7 +59,7 @@ app.use((req, res, next) => {
     if (req.hasOwnProperty('originalUrl')) {
       try{  
         let tempUrl = req.originalUrl.split("/");
-        if (tempUrl.indexOf("registration") && tempUrl.indexOf("signin")) {
+        if (tempUrl.indexOf("registration") > -1 && tempUrl.indexOf("signin") > -1 ) {
           console.log(JSON.stringify(body));
           let resData = JSON.stringify(body);
           resData = JSON.parse(body);
