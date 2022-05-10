@@ -16,13 +16,11 @@ const MySQLStore = require('express-mysql-session')(session);
 
 
 const sessionStore = new MySQLStore({}, db);
-const halfHours = 1000 * 60 * 60 * 0.5;
+const halfHours = 1000 * 60 * 60 * 1;
 app.use(session({
-    secret: "thisismysecrctekey",
+    secret: "1234567890qwert",
     store: sessionStore,
-    resave: true, 
-    saveUninitialized:false,
-    cookie: { maxAge: halfHours }
+    cookie: { path : '/', httpOnly: false, maxAge: halfHours }
 }));
 // end session
 
