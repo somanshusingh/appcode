@@ -63,13 +63,13 @@ app.use((req, res, next) => {
         let tempUrl = req.originalUrl.split("/");
         if (tempUrl.indexOf("registration") && tempUrl.indexOf("signin")) {
           console.log(JSON.stringify(body));
-          let resData = JSON.parse(body);
-          if (resData.hasOwnProperty('status') && resData.status == 1){
-            req.session.UserId = resData.msg.UserId;
-            req.session.Role = resData.msg.Role;
-            req.session.Name = resData.msg.Name;
-            console.log(req.session);
-          }
+          // let resData = JSON.parse(body);
+          // if (resData.hasOwnProperty('status') && resData.status == 1){
+          //   req.session.UserId = resData.msg.UserId;
+          //   req.session.Role = resData.msg.Role;
+          //   req.session.Name = resData.msg.Name;
+          //   console.log(req.session);
+          // }
         }
       } catch(ex){
         console.log('error  ->', ex.stack);
