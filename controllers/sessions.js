@@ -27,7 +27,11 @@ module.exports.controller = function (app) {
     }
   });
   app.get("/session/get", (req, res) => {
-    res.json(req.session)
+  try{
+    res.json({ status: 1, msg: {session : req.session, sessionId : req.sessionID} });
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
   });
 
   app.get("/session/logout", (req, res) => {
