@@ -42,6 +42,65 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.use((req, res, next) => {
+  const oldWrite = res.write;
+  const oldEnd = res.end;
+
+  const chunks = [];
+
+  res.write = (...restArgs) => {
+    chunks.push(Buffer.from(restArgs[0]));
+    oldWrite.apply(res, restArgs);
+  };
+
+  res.end = (...restArgs) => {
+    if (restArgs[0]) {
+      chunks.push(Buffer.from(restArgs[0]));
+    }
+    const body = Buffer.concat(chunks).toString("utf8");
+    if (req.hasOwnProperty('originalUrl')) {
+      let tempUrl = req.originalUrl.split("/");
+      if (tempUrl.indexOf("registration") && tempUrl.indexOf("signin")) {
+        let resData = JSON.parse(body);
+        if (resData.hasOwnProperty('status') && resData.status == 1){
+          req.session.UserId = resData.msg.UserId;
+          req.session.Role = resData.msg.Role;
+          req.session.Name = resData.msg.Name;
+          console.log(req.session);
+        }
+      }
+    }
+    // console.log({
+    //   time: new Date().toUTCString(),
+    //   fromIP: req.headers['x-forwarded-for'] ||
+    //   req.connection.remoteAddress,
+    //   method: req.method,
+    //   originalUri: req.originalUrl,
+    //   uri: req.url,
+    //   requestData: req.body,
+    //   responseData: body,
+    //   referer: req.headers.referer || '',
+    //   ua: req.headers['user-agent']
+    // });
+
+    // console.log(body);
+    oldEnd.apply(res, restArgs);
+  };
+  next(); // this will invoke next middleware function
+});
+
+app.get("/get-session", (req, res) => {
+  try {
+    res.json({
+      status: 1,
+      msg: { session: req.session, sessionId: req.sessionID },
+    });
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+
+
 // view engine setup
 //app.set('views', path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
@@ -55,6 +114,7 @@ app.get("/", function (req, res) {
   //res.send('Welcome to Express Server');
   res.render("index");
 });
+
 app.all('/Image/*', function (req, res) {
   var urlpath = req.url;
   urlpath = decodeURI(urlpath);
