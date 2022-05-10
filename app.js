@@ -55,6 +55,12 @@ app.get("/", function (req, res) {
   //res.send('Welcome to Express Server');
   res.render("index");
 });
+app.all('/Image/*', function (req, res) {
+  var urlpath = req.url;
+  urlpath = decodeURI(urlpath);
+  urlpath = urlpath.toString().replace('Image', '');
+  res.sendFile(path.join(__dirname + urlpath));
+});
 
 app.all("/assets/:folder/:file", function (req, res) {
   var urlpath = req.url;
