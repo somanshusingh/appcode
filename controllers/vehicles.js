@@ -31,7 +31,7 @@ module.exports.controller = function (app) {
     (req, res, next) => {
       try {
         const reqObject = req.body;
-        let file = req.files["null"];
+        let file = req.files["files"] ? req.files["files"]: req.files["null"];
         if (file && file.hasOwnProperty('originalFilename')){
           let tempFile = [];
           tempFile.push(file);
