@@ -9,20 +9,27 @@ const fs = require("fs");
 const cors = require('cors');
 const db = require("./models/db");
 const sessions = require('express-session');
-const MySQLStore = require('express-mysql-session')(sessions);
+//const MySQLStore = require('express-mysql-session')(sessions);
 // get SQL DB driver connection
 //const db = require("./models/db");
 
-const sessionStore = new MySQLStore({}, db);
+//const sessionStore = new MySQLStore({}, db);
 const halfHours = 1000 * 60 * 60 * 0.5;
-app.use(sessions({
-    secret: "ssshhhhh",
-    store: sessionStore,
-    saveUninitialized: false,
-    resave: false,
-    cookie: { maxAge: halfHours }
-  }));
+// app.use(sessions({
+//     secret: "ssshhhhh",
+//     store: sessionStore,
+//     saveUninitialized: false,
+//     resave: false,
+//     cookie: { maxAge: halfHours }
+//   }));
 // end session
+
+app.use(sessions({
+  secret: 'Your_Secret_Key',
+  resave: true,
+  saveUninitialized: true,
+  cookie: { maxAge: halfHours }
+}))
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,30 +47,13 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.get("/get-session", (req, res) => {
-  try {
-    res.json({status: 1,msg: session});
-  } catch (ex) {
-    res.json({ status: 100, msg: ex.stack });
-  }
-});
-app.get("/end-session", (req, res) => {
-  try {
-    req.session.destroy();
-    req.session = null;
-    res.json({status: 1,msg: ''});
-  } catch (ex) {
-    res.json({ status: 100, msg: ex.stack });
-  }
-});
-
 //session
 app.use((req, res, next) => {
   let session = req.session;
   if (req.hasOwnProperty('originalUrl')) {
-    try{  
+    try{
       let tempUrl = req.originalUrl.split("/");
-      if (tempUrl.indexOf("registration") > -1 && tempUrl.indexOf("signin") > -1 ) {
+      if (tempUrl.indexOf("registration") > -1 && tempUrl.indexOf("signin") > -1) {
         session=req.session;
         session.sessionID=req.sessionID;
         session.user = {};
@@ -103,6 +93,25 @@ app.all("/assets/:folder/:file", function (req, res) {
   var file = req.params.file;
   res.sendFile(path.join(__dirname + "/views/assets/" + folder + "/" + file));
 });
+
+app.get("/get-session", (req, res) => {
+  try {
+    res.json({status: 1,msg: req.session});
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+app.get("/end-session", (req, res) => {
+  try {
+    req.session.destroy(function(error){
+      console.log("Session Destroyed")
+  })
+    res.json({status: 1,msg: ''});
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+
 const port = process.env.PORT || 5000;
 const server = app.listen(port, function () {
   var host = server.address().address;
