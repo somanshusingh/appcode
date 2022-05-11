@@ -9,7 +9,7 @@ const fs = require("fs");
 const cors = require('cors');
 const db = require("./models/db");
 const sessions = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
+const MySQLStore = require('express-mysql-session')(sessions);
 // get SQL DB driver connection
 //const db = require("./models/db");
 
@@ -19,7 +19,7 @@ app.use(sessions({
     secret: "thisismysecrctekeyfhrgfgrf56456y84fwir767",
     store: sessionStore,
     saveUninitialized: true,
-    cookie: { maxAge: halfHour },
+    cookie: { maxAge: halfHours },
     resave: false,
   }));
 // end session
@@ -43,6 +43,15 @@ app.use(function (req, res, next) {
 app.get("/get-session", (req, res) => {
   try {
     res.json({status: 1,msg: session});
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+app.get("/end-session", (req, res) => {
+  try {
+    req.session.destroy();
+    req.session = null;
+    res.json({status: 1,msg: ''});
   } catch (ex) {
     res.json({ status: 100, msg: ex.stack });
   }
