@@ -8,20 +8,20 @@ const util = require("util");
 const fs = require("fs");
 const cors = require('cors');
 const db = require("./models/db");
-const session = require('express-session');
+const sessions = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 // get SQL DB driver connection
 //const db = require("./models/db");
-//session
-
 
 const sessionStore = new MySQLStore({}, db);
-const halfHours = 1000 * 60 * 60 * 1;
-app.use(session({
-    secret: "1234567890qwert",
+const halfHours = 1000 * 60 * 60 * 0.5;
+app.use(sessions({
+    secret: "thisismysecrctekeyfhrgfgrf56456y84fwir767",
     store: sessionStore,
-    cookie: { path : '/', httpOnly: false, maxAge: halfHours }
-}));
+    saveUninitialized: true,
+    cookie: { maxAge: halfHour },
+    resave: false,
+  }));
 // end session
 
 app.use(bodyParser.json());
@@ -40,68 +40,30 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use((req, res, next) => {
-  const oldWrite = res.write;
-  const oldEnd = res.end;
-
-  const chunks = [];
-
-  res.write = (...restArgs) => {
-    chunks.push(Buffer.from(restArgs[0]));
-    oldWrite.apply(res, restArgs);
-  };
-
-  res.end = (...restArgs) => {
-    if (restArgs[0]) {
-      chunks.push(Buffer.from(restArgs[0]));
-    }
-    const body = Buffer.concat(chunks).toString("utf8");
-    if (req.hasOwnProperty('originalUrl')) {
-      try{  
-        let tempUrl = req.originalUrl.split("/");
-        if (tempUrl.indexOf("registration") > -1 && tempUrl.indexOf("signin") > -1 ) {
-          console.log(JSON.stringify(body));
-          let resData = JSON.stringify(body);
-          resData = JSON.parse(body);
-          if (resData.hasOwnProperty('status') && resData.status == 1){
-            req.session.UserId = resData.msg.UserId;
-            req.session.Role = resData.msg.Role;
-            req.session.Name = resData.msg.Name;
-            console.log(req.session);
-          }
-        }
-      } catch(ex){
-        console.log('error  ->', ex.stack);
-      }
-    }
-    // console.log({
-    //   time: new Date().toUTCString(),
-    //   fromIP: req.headers['x-forwarded-for'] ||
-    //   req.connection.remoteAddress,
-    //   method: req.method,
-    //   originalUri: req.originalUrl,
-    //   uri: req.url,
-    //   requestData: req.body,
-    //   responseData: body,
-    //   referer: req.headers.referer || '',
-    //   ua: req.headers['user-agent']
-    // });
-
-    // console.log(body);
-    oldEnd.apply(res, restArgs);
-  };
-  next(); // this will invoke next middleware function
-});
-
 app.get("/get-session", (req, res) => {
   try {
-    res.json({
-      status: 1,
-      msg: { session: req.session, sessionId: req.sessionID },
-    });
+    res.json({status: 1,msg: session});
   } catch (ex) {
     res.json({ status: 100, msg: ex.stack });
   }
+});
+
+//session
+var session;
+app.use((req, res, next) => {
+  if (req.hasOwnProperty('originalUrl')) {
+    try{  
+      let tempUrl = req.originalUrl.split("/");
+      if (tempUrl.indexOf("registration") > -1 && tempUrl.indexOf("signin") > -1 ) {
+        session=req.session;
+        session.sessionID=req.sessionID;
+        session.user = {};
+      }
+    } catch(ex){
+      console.log('error  ->', ex.stack);
+    }
+  }
+  next(); // this will invoke next middleware function
 });
 
 
@@ -169,3 +131,40 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   //res.render('error');
 });
+
+
+//logger
+// app.use((req, res, next) => {
+//   const oldWrite = res.write;
+//   const oldEnd = res.end;
+
+//   const chunks = [];
+
+//   res.write = (...restArgs) => {
+//     chunks.push(Buffer.from(restArgs[0]));
+//     oldWrite.apply(res, restArgs);
+//   };
+
+//   res.end = (...restArgs) => {
+//     if (restArgs[0]) {
+//       chunks.push(Buffer.from(restArgs[0]));
+//     }
+//     const body = Buffer.concat(chunks).toString("utf8");
+//     // console.log({
+//     //   time: new Date().toUTCString(),
+//     //   fromIP: req.headers['x-forwarded-for'] ||
+//     //   req.connection.remoteAddress,
+//     //   method: req.method,
+//     //   originalUri: req.originalUrl,
+//     //   uri: req.url,
+//     //   requestData: req.body,
+//     //   responseData: body,
+//     //   referer: req.headers.referer || '',
+//     //   ua: req.headers['user-agent']
+//     // });
+
+//     // console.log(body);
+//     oldEnd.apply(res, restArgs);
+//   };
+//   next(); // this will invoke next middleware function
+// });
