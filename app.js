@@ -16,11 +16,11 @@ const MySQLStore = require('express-mysql-session')(sessions);
 const sessionStore = new MySQLStore({}, db);
 const halfHours = 1000 * 60 * 60 * 0.5;
 app.use(sessions({
-    secret: "thisismysecrctekeyfhrgfgrf56456y84fwir767",
+    secret: "ssshhhhh",
     store: sessionStore,
-    saveUninitialized: true,
-    cookie: { maxAge: halfHours },
+    saveUninitialized: false,
     resave: false,
+    cookie: { maxAge: halfHours }
   }));
 // end session
 
@@ -58,8 +58,8 @@ app.get("/end-session", (req, res) => {
 });
 
 //session
-var session;
 app.use((req, res, next) => {
+  let session = req.session;
   if (req.hasOwnProperty('originalUrl')) {
     try{  
       let tempUrl = req.originalUrl.split("/");
