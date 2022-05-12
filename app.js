@@ -20,7 +20,7 @@ const halfHours = 1000 * 60 * 60 * 0.5;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
-app.use(cors()); // used to avoid cors error
+app.use(cors({credentials: true, origin: 'https://jbm.herokuapp.com'})); // used to avoid cors error
 
 app.use(function (req, res, next) {
   //res.header("Access-Control-Allow-Origin", "*");
@@ -29,7 +29,7 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin,X-Requested-With,Content-Type,Accept,content-type,application/json"
+    "Origin,X-Requested-With,Content-Type,Accept,content-type,Content-Type, Content-Length, Authorization, application/json, Accept"
   );
   next();
 });
