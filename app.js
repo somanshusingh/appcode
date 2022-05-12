@@ -31,8 +31,7 @@ app.use(sessions({
   saveUninitialized: false,
   cookie: {
   path : '/',
-      expires: 6000000,
-  domain: 'herokuapp.com',
+  expires: 6000000,
   httpOnly : false
   }
 }));
