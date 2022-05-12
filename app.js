@@ -40,7 +40,11 @@ app.use(sessions({
   resave: false,
   saveUninitialized: true,
   store: sessionStore,
-  cookie: { maxAge: halfHours }
+  cookie: { 
+    maxAge: halfHours,
+    secure:false,
+    httpOnly:false 
+   }
 }))
 
 //session
