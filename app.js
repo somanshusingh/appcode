@@ -41,9 +41,7 @@ app.use(sessions({
   saveUninitialized: true,
   store: sessionStore,
   cookie: { 
-    maxAge: halfHours,
-    secure:false,
-    httpOnly:false 
+    maxAge: halfHours
    }
 }))
 
