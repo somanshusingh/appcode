@@ -20,7 +20,7 @@ const halfHours = 1000 * 60 * 60 * 0.5;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
-app.use(cors()); // used to avoid cors error
+//app.use(cors()); // used to avoid cors error
 
 app.use(cookieParser());
 app.use(sessions({
