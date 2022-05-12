@@ -171,6 +171,32 @@ module.exports.controller = function (app) {
       res.json({ status: 100, msg: ex.stack });
     }
   });
+  app.get("/registration/signin/:UserId/:Password", (req, res) => {
+    try {
+      const reqObject = req.body;
+      let sql = `SELECT * FROM ${tableName} where  Status = "Active" AND UserId = "${req.params.UserId}" AND Password = "${req.params.Password}"`;
+      let query = db.query(sql, (err, row) => {
+        if (err) {
+          res.json({ status: 0, msg: err });
+        } else {
+          if (row && row.length && row.length > 0) {
+            let userResponse = {
+              UserId : row[0].UserId,
+              Role : row[0].Role,
+              Name : row[0].FirstName +` `+row[0].LastName,
+              Allowed_Menu : (row[0].Allowed_Menu) ? JSON.parse(row[0].Allowed_Menu) : {}
+            }
+            req.session.user = userResponse;
+            res.json({ status: 1, msg: userResponse });
+          } else {
+            res.json({ status: 0, msg: "UserID/Password not exist/active" });
+          }
+        }
+      });
+    } catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
+  });
 
   app.post("/registration/update", validateUpdate, (req, res) => {
     try {
