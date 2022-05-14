@@ -5,6 +5,7 @@ const appRoot = path.dirname(require.main.filename);
 // get SQL DB driver connection
 const db = require("../models/db");
 const tableName = 'materialmaster';
+const newTableName = 'vehicletypemaster';
 
 module.exports.controller = function (app) {
     app.post("/master/material", (req, res) => {
@@ -72,5 +73,69 @@ module.exports.controller = function (app) {
           }
     });
   
+    app.post("/master/vehicletype", (req, res) => {
+      try {
+        let sql =
+          `CREATE TABLE ${newTableName}(MaterialId int NOT NULL AUTO_INCREMENT, VehicleType VARCHAR(50) , Description VARCHAR(100), PRIMARY KEY(MaterialId))`;
+        db.query(sql, (err) => {
+          try {
+            if (err) {
+              if (
+                err &&
+                err.sqlMessage &&
+                err.sqlMessage === `Table '${newTableName}' already exists`
+              ) {
+                //code here
+              } else {
+                res.json({ status: 0, msg: err });
+              }
+            }
+            const reqObject = req.body;
+            let post = {
+              VehicleType: reqObject.VehicleType,
+              Description : reqObject.Description ? reqObject.Description : ""
+          };
+            let sql = `INSERT INTO ${newTableName} SET ?`;
+            let query = db.query(sql, post, (err) => {
+              if (err) {
+                if (err && err.code && err.code === "ER_DUP_ENTRY") {
+                  res.json({
+                    status: 0,
+                    msg: `Material ${reqObject.MaterialId} already exist`,
+                  });
+                } else {
+                  res.json({ status: 0, msg: err });
+                }
+              } else {
+                res.json({ status: 1, msg: "VehicleType added" });
+              }
+            });
+          } catch (ex) {
+            res.json({ status: 100, msg: ex.stack });
+          }
+        });
+      } catch (ex) {
+        res.json({ status: 100, msg: ex.stack });
+      }
+    });
+  
+    app.get('/master/vehicletype/view', (req, res)=>{
+      try{
+              let sql = `SELECT * FROM ${newTableName}`;
+              let query = db.query(sql, (err, row) => {
+                  if (err) {
+                    res.json({ status: 0, msg: err });
+                  } else {
+                    if (row && row.length && row.length > 0) {
+                        res.json({ status: 1, msg: row});
+                    } else {
+                        res.json({ status: 0, msg: `vehicletype not available` });
+                    }
+                  }
+              });
+      }catch (ex) {
+          res.json({ status: 100, msg: ex.stack });
+        }
+  });
     //code end here
 };
