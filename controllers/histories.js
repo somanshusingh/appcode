@@ -314,7 +314,7 @@ module.exports.controller = function (app) {
                           res.json({ status: 0, msg: err });
                         } else {
                           if (row && row.affectedRows && row.affectedRows > 0) {
-                            res.json({ status: 1, msg: "date updated" });
+                            res.json({ status: 1, msg: "data updated" });
                           } else {
                             res.json({ status: 0, msg: "data not updated" });
                           }
