@@ -47,5 +47,33 @@ module.exports.controller = function (app) {
       res.json({ status: 100, msg: ex.stack });
     }
   });
+
+  app.get("/session/get/:session_id", (req, res) => {
+    try {
+        const session_id = req.params.session_id ? req.params.session_id : '';
+        let sql = `SELECT * FROM ${tableName} where session_id = '${session_id}'` ;
+        let query = db.query(sql, (err, row) => {
+            if (err) {
+                res.json({ status: 0, msg: err });
+            } else {
+            if (row && row.length && row.length > 0 && row[0].hasOwnProperty('data')) {
+              if(row.length>0){
+                for(let s in row){
+                  if(row[s].hasOwnProperty('data')){
+                    row[s]['data'] = JSON.parse(row[s]['data'] )
+                  }
+                }
+              }
+                res.json({ status: 1, msg: row});
+            } else {
+                res.json({ status: 0, msg: `` });
+            }
+            }
+        });
+    } catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
+  });
   //code end here
+
 };

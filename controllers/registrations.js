@@ -184,10 +184,11 @@ module.exports.controller = function (app) {
               UserId : row[0].UserId,
               Role : row[0].Role,
               Name : row[0].FirstName +` `+row[0].LastName,
-              Allowed_Menu : (row[0].Allowed_Menu) ? JSON.parse(row[0].Allowed_Menu) : {}
+              Allowed_Menu : (row[0].Allowed_Menu) ? JSON.parse(row[0].Allowed_Menu) : {},
+              sessionID: req.sessionID
             }
             req.session.user = userResponse;
-            res.header("Access-Control-Allow-Origin", 'https://jbm.herokuapp.com');
+            // res.header("Access-Control-Allow-Origin", 'https://jbm.herokuapp.com');
             res.json({ status: 1, msg: userResponse });
           } else {
             res.json({ status: 0, msg: "UserID/Password not exist/active" });
