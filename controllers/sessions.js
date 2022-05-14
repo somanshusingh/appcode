@@ -74,6 +74,26 @@ module.exports.controller = function (app) {
       res.json({ status: 100, msg: ex.stack });
     }
   });
+
+  app.get("/session/end/:session_id", (req, res) => {
+    try {
+        const session_id = req.params.session_id ? req.params.session_id : '';
+        let sql = `delete FROM ${tableName} where session_id = '${session_id}'` ;
+        let query = db.query(sql, (err, row) => {
+            if (err) {
+                res.json({ status: 0, msg: err });
+            } else {
+              if (row && row.affectedRows && row.affectedRows > 0) {
+                res.json({ status: 1, msg: "Logged Out" });
+              } else {
+                res.json({ status: 0, msg: "Error" });
+              }
+            }
+        });
+    } catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
+  });
   //code end here
 
 };
