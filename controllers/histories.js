@@ -73,6 +73,9 @@ module.exports.controller = function (app) {
               if (Trip_No === ''){
                 findQuery = "";
               }
+              if (req.query.hasOwnProperty('VehicleNo') && req.query.VehicleNo !== "") {
+                findQuery = ` where VehicleNo = "${req.query.VehicleNo}"`;
+              }
               let sql = `SELECT * FROM ${tableName}${findQuery}`;
               let query = db.query(sql, (err, row) => {
                   if (err) {
@@ -215,6 +218,9 @@ module.exports.controller = function (app) {
               let findQuery = ` where Trip_No = "${Trip_No}"`;
               if (Trip_No === ''){
                 findQuery = "";
+              }
+              if (req.query.hasOwnProperty('VehicleNo') && req.query.VehicleNo !== "") {
+                findQuery = ` where VehicleNo = "${req.query.VehicleNo}"`;
               }
               let sql = `SELECT * FROM ${newTableName}${findQuery}`;
               let query = db.query(sql, (err, row) => {
