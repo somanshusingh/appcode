@@ -70,7 +70,7 @@ module.exports.controller = function (app) {
       try{
           //if(req.params && req.params.VehicleNo){
               const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
-              let findQuery = `where Type = "in"`;
+              let findQuery = ` where Type = "in"`;
               if (Trip_No !== ''){
                 findQuery = ` where Trip_No = "${Trip_No}" AND Type = "in"`;
               }
@@ -221,7 +221,7 @@ module.exports.controller = function (app) {
       try{
           //if(req.params && req.params.VehicleNo){
             const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
-            let findQuery = `where Type = "out"`;
+            let findQuery = ` where Type = "out"`;
             if (Trip_No !== ''){
               findQuery = ` where Trip_No = "${Trip_No}" AND Type = "out"`;
             }
