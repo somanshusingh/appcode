@@ -5,14 +5,13 @@ const appRoot = path.dirname(require.main.filename);
 
 // get SQL DB driver connection
 const db = require("../models/db");
-const tableName = 'inhouse_transport_history';
-const newTableName = 'outside_transport_history'
+const tableName = 'transport_history';
 
 module.exports.controller = function (app) {
   app.post('/history/inhouse_transport', (req, res)=>{
       try{
         let sql =
-            `CREATE TABLE ${tableName}(Trip_No VARCHAR(15) NOT NULL, VehicleNo VARCHAR(15), Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20), Gross_Wgh_Date_time DATE, Tare_Wgh_Date_time DATE, Gate_In_Date_time DATE, Gate_Out_Date_time DATE, Remark_Field VARCHAR(200), Front_image json, Rear_Image json, PRIMARY KEY(Trip_No))`;
+            `CREATE TABLE ${tableName}(Trip_No VARCHAR(15) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20),Gross_Wgh_Date_time DATE, Tare_Wgh_Date_time DATE, Gate_In_Date_time DATE, Gate_Out_Date_time DATE, Remark_Field VARCHAR(200), Front_image json, Rear_Image json, Type VARCHAR(10), PRIMARY KEY(Trip_No))`;
           db.query(sql, (err) => {
             try {
               if (err) {
@@ -44,10 +43,11 @@ module.exports.controller = function (app) {
                 Net_Weight : 0,//reqObject.Net_Weight,
                 Vehicle_Mapping: '',//reqObject.Vehicle_Mapping,
                 Qty_Mt_Weight : reqObject.Qty_Mt_Weight,
-                Status: "open",
+                Status: reqObject.Status ? reqObject.Status : '',
                 LrNumber : reqObject.LrNumber ? reqObject.LrNumber : '',
                 LrDate  : reqObject.LrDate,
-                Card_Number : reqObject.Card_Number ? reqObject.Card_Number : ''
+                Card_Number : reqObject.Card_Number ? reqObject.Card_Number : '',
+                Type:'in'
               };
               let sql = `INSERT INTO ${tableName} SET ?`;
               let query = db.query(sql, post, (err) => {
@@ -70,15 +70,15 @@ module.exports.controller = function (app) {
       try{
           //if(req.params && req.params.VehicleNo){
               const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
-              let findQuery = ` where Trip_No = "${Trip_No}"`;
-              if (Trip_No === ''){
-                findQuery = "";
+              let findQuery = `where Type = "in"`;
+              if (Trip_No !== ''){
+                findQuery = ` where Trip_No = "${Trip_No}" AND Type = "in"`;
               }
               if (req.query.hasOwnProperty('VehicleNo') && req.query.VehicleNo !== "") {
-                findQuery = ` where VehicleNo = "${req.query.VehicleNo}"`;
+                findQuery = ` where VehicleNo = "${req.query.VehicleNo}" AND Type = "in"`;
               }
               if (req.query.hasOwnProperty('Card_Number') && req.query.Card_Number !== "") {
-                findQuery = ` where Card_Number = "${req.query.Card_Number}"`;
+                findQuery = ` where Card_Number = "${req.query.Card_Number}" AND Type = "in"`;
               }
               let sql = `SELECT * FROM ${tableName}${findQuery}`;
               let query = db.query(sql, (err, row) => {
@@ -114,7 +114,7 @@ module.exports.controller = function (app) {
           }
       }
       updateQuery = updateQuery.substring(0, updateQuery.length - 1);
-      let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE Trip_No = '${Trip_No}'`;
+      let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE Trip_No = '${Trip_No}' AND Type = "in"`;
       let query = db.query(sql, (err, row) => {
         if (err) {
           res.json({ status: 0, msg: err });
@@ -134,14 +134,14 @@ module.exports.controller = function (app) {
   app.post('/history/outside_transport', (req, res)=>{
         try{
           let sql =
-              `CREATE TABLE ${newTableName}(Trip_No VARCHAR(15) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20),Gross_Wgh_Date_time DATE, Tare_Wgh_Date_time DATE, Gate_In_Date_time DATE, Gate_Out_Date_time DATE, Remark_Field VARCHAR(200), Front_image json, Rear_Image json, PRIMARY KEY(Trip_No))`;
+              `CREATE TABLE ${tableName}(Trip_No VARCHAR(15) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20),Gross_Wgh_Date_time DATE, Tare_Wgh_Date_time DATE, Gate_In_Date_time DATE, Gate_Out_Date_time DATE, Remark_Field VARCHAR(200), Front_image json, Rear_Image json, Type VARCHAR(10), PRIMARY KEY(Trip_No))`;
             db.query(sql, (err) => {
               try {
                 if (err) {
                   if (
                     err &&
                     err.sqlMessage &&
-                    err.sqlMessage === `Table '${newTableName}' already exists`
+                    err.sqlMessage === `Table '${tableName}' already exists`
                   ) {
                     //code here
                   } else {
@@ -170,12 +170,13 @@ module.exports.controller = function (app) {
                   Net_Weight : 0,//reqObject.Net_Weight,
                   Vehicle_Mapping: '',//reqObject.Vehicle_Mapping,
                   Qty_Mt_Weight : reqObject.Qty_Mt_Weight,
-                  Status: "open",
+                  Status: reqObject.Status ? reqObject.Status : '',
                   LrNumber : reqObject.LrNumber ? reqObject.LrNumber : '',
                   LrDate  : reqObject.LrDate,
-                  Card_Number : reqObject.Card_Number ? reqObject.Card_Number : ''
+                  Card_Number : reqObject.Card_Number ? reqObject.Card_Number : '',
+                  Type : "out"
                 };
-                let sql = `INSERT INTO ${newTableName} SET ?`;
+                let sql = `INSERT INTO ${tableName} SET ?`;
                 let query = db.query(sql, post, (err) => {
                   if (err) {
                       res.json({ status: 0, msg: err });
@@ -219,18 +220,18 @@ module.exports.controller = function (app) {
   app.get('/history/outside_transport/view/:Trip_No?', (req, res)=>{
       try{
           //if(req.params && req.params.VehicleNo){
-              const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
-              let findQuery = ` where Trip_No = "${Trip_No}"`;
-              if (Trip_No === ''){
-                findQuery = "";
-              }
-              if (req.query.hasOwnProperty('VehicleNo') && req.query.VehicleNo !== "") {
-                findQuery = ` where VehicleNo = "${req.query.VehicleNo}"`;
-              }
-              if (req.query.hasOwnProperty('Card_Number') && req.query.Card_Number !== "") {
-                findQuery = ` where Card_Number = "${req.query.Card_Number}"`;
-              }
-              let sql = `SELECT * FROM ${newTableName}${findQuery}`;
+            const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
+            let findQuery = `where Type = "out"`;
+            if (Trip_No !== ''){
+              findQuery = ` where Trip_No = "${Trip_No}" AND Type = "out"`;
+            }
+            if (req.query.hasOwnProperty('VehicleNo') && req.query.VehicleNo !== "") {
+              findQuery = ` where VehicleNo = "${req.query.VehicleNo}" AND Type = "out"`;
+            }
+            if (req.query.hasOwnProperty('Card_Number') && req.query.Card_Number !== "") {
+              findQuery = ` where Card_Number = "${req.query.Card_Number}" AND Type = "out"`;
+            }
+              let sql = `SELECT * FROM ${tableName}${findQuery}`;
               let query = db.query(sql, (err, row) => {
                   if (err) {
                   res.json({ status: 0, msg: err });
@@ -264,7 +265,7 @@ module.exports.controller = function (app) {
           }
       }
       updateQuery = updateQuery.substring(0, updateQuery.length - 1);
-      let sql = `UPDATE ${newTableName} SET ${updateQuery} WHERE Trip_No = '${Trip_No}'`;
+      let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE Trip_No = '${Trip_No}' AND Type="out"`;
       let query = db.query(sql, (err, row) => {
         if (err) {
           res.json({ status: 0, msg: err });
@@ -287,7 +288,7 @@ module.exports.controller = function (app) {
             const Trip_No = req.body.Trip_No ? req.body.Trip_No : '';
             const Weight = (req.body.Weight && isNaN(req.body.Weight) === false) ? parseFloat(req.body.Weight) : 0;
             const Card_Number = req.body.Card_Number ? req.body.Card_Number : '';
-            const tempTableName = (req.body.trip && req.body.trip === 'out') ? newTableName : tableName;
+            const tempTableName = (req.body.trip && req.body.trip === 'out') ? tableName : tableName;
             let findQuery = ` where Card_Number = "${Card_Number}"`;
             if (Trip_No !== ''){
               findQuery += ` AND  Trip_No = "${Trip_No}"`;
@@ -355,6 +356,59 @@ module.exports.controller = function (app) {
         res.json({ status: 100, msg: ex.stack });
       }
 });
+
+app.post("/history/getcardinfo/:Card_Number", (req, res) => {
+  try {
+    const Card_Number = req.params.Card_Number ? req.params.Card_Number : '';
+    let findQuery = ``;
+    if (Card_Number !== ''){
+        findQuery = ` where Card_Number = "${Card_Number}"`;
+    }
+    let sql = `SELECT * FROM ${tableName}${findQuery}`;
+    let query = db.query(sql, (err, row) => {
+        if (err) {
+        res.json({ status: 0, msg: err });
+        } else {
+        if (row && row.length && row.length > 0) {
+            if(row[0].hasOwnProperty('Status') && ((row[0]['Status']).toString().toLowerCase() !== "close" || (row[0]['Status']).toString().toLowerCase() !== "completed")){
+              res.json({ status: 1, msg: row});
+            } else{
+              res.json({ status: 0, msg: `no record found` });
+            }
+        } else {
+            res.json({ status: 0, msg: `no record found` });
+        }
+        }
+    });
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+
+app.post("/history/gettripinfo/:Trip_No", (req, res) => {
+  try {
+    const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
+    let findQuery = ``;
+    if (Trip_No !== ''){
+        findQuery = ` where Trip_No = "${Trip_No}"`;
+    }
+    let sql = `SELECT * FROM ${tableName}${findQuery}`;
+    let query = db.query(sql, (err, row) => {
+        if (err) {
+        res.json({ status: 0, msg: err });
+        } else {
+        if (row && row.length && row.length > 0) {
+            res.json({ status: 1, msg: row});
+        } else {
+            res.json({ status: 0, msg: `no record found` });
+        }
+        }
+    });
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+
     //code end here
 };
 
