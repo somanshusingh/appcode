@@ -290,7 +290,7 @@ module.exports.controller = function (app) {
             const tempTableName = (req.body.trip && req.body.trip === 'out') ? newTableName : tableName;
             let findQuery = ` where Card_Number = "${Card_Number}"`;
             if (Trip_No !== ''){
-              findQuery += ` AND  Trip_No = ${Trip_No}`;
+              findQuery += ` AND  Trip_No = "${Trip_No}"`;
             }
             let sql = `SELECT * FROM ${tempTableName}${findQuery}`;
             let query = db.query(sql, (err, row) => {
@@ -317,12 +317,24 @@ module.exports.controller = function (app) {
                     }
                     if (updateQuery !== ``){
                       let tempsql = `UPDATE ${tempTableName} SET ${updateQuery} ${findQuery}`;
-                      let nquery = db.query(tempsql, (err, row) => {
+                      let nquery = db.query(tempsql, (err, row, fields) => {
                         if (err) {
                           res.json({ status: 0, msg: err });
                         } else {
                           if (row && row.affectedRows && row.affectedRows > 0) {
-                            res.json({ status: 1, msg: "data updated" });
+                            console.log(Trip_No);
+                            let sql = `SELECT * FROM ${tempTableName} WHERE Trip_No='${Trip_No}';                            `;
+                            let query = db.query(sql, (err, row) => {
+                                if (err) {
+                                res.json({ status: 0, msg: err });
+                                } else {
+                                  if (row && row.length && row.length > 0) {
+                                    res.json({ status: 1, msg: "data updated", "print_data":row[0]});
+                                  } else {
+                                    res.json({ status: 1, msg: "data updated" });
+                                  }
+                                }
+                              });
                           } else {
                             res.json({ status: 0, msg: "data not updated" });
                           }
