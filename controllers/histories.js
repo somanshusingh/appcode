@@ -357,6 +357,78 @@ module.exports.controller = function (app) {
       }
 });
 
+app.get('/history/weight/update/:Card_Number/:Weight', (req, res)=>{
+  try{
+      //if(req.params && req.params.VehicleNo){
+          const Weight = (req.params.Weight && isNaN(req.params.Weight) === false) ? parseFloat(req.params.Weight) : 0;
+          const Card_Number = req.params.Card_Number ? req.params.Card_Number : '';
+          let findQuery = ` where Card_Number = "${Card_Number}"`;
+          let sql = `SELECT * FROM ${tableName}${findQuery}`;
+          let query = db.query(sql, (err, row) => {
+              if (err) {
+              res.json({ status: 0, msg: err });
+              } else {
+              if (row && row.length && row.length > 0) {
+                //res.json({ status: 1, msg: row});
+                //console.log(row, Weight);
+                if(row[0].hasOwnProperty('Status') && ((row[0]['Status']).toString().toLowerCase() !== "close" || (row[0]['Status']).toString().toLowerCase() !== "completed")){
+                  let tempGross_Weight = row[0].Gross_Weight ? row[0].Gross_Weight : 0;
+                  let tempTare_Weight = row[0].Tare_Weight ? row[0].Tare_Weight : 0;
+                  if ((tempGross_Weight || tempGross_Weight === 0 )|| (tempTare_Weight || tempTare_Weight === 0) ){
+                    let updateQuery = ``;
+                    if (tempGross_Weight !== 0 && tempTare_Weight !== 0 )  {
+                      updateQuery = ``;
+                    }else if ((tempGross_Weight && tempGross_Weight !== 0) || (tempGross_Weight !== 0 && tempTare_Weight === 0 ))  {
+                      updateQuery = `Tare_Weight = "${Weight}"`;
+                    }else if ((tempTare_Weight && tempTare_Weight !== 0) || ( tempTare_Weight !== 0 && tempGross_Weight === 0 ))   {
+                      updateQuery = `Gross_Weight = "${Weight}"`
+                    }else if (tempGross_Weight === 0 && tempTare_Weight === 0 )   {
+                      updateQuery = `Gross_Weight = "${Weight}"`
+                    }
+                    if (updateQuery !== ``){
+                      let tempsql = `UPDATE ${tableName} SET ${updateQuery} ${findQuery}`;
+                      let nquery = db.query(tempsql, (err, row, fields) => {
+                        if (err) {
+                          res.json({ status: 0, msg: err });
+                        } else {
+                          if (row && row.affectedRows && row.affectedRows > 0) {
+                            let sql = `SELECT * FROM ${tableName} WHERE Card_Number='${Card_Number}';                            `;
+                            let query = db.query(sql, (err, row) => {
+                                if (err) {
+                                res.json({ status: 0, msg: err });
+                                } else {
+                                  if (row && row.length && row.length > 0) {
+                                    res.json({ status: 1, msg: "data updated", "print_data":row[0]});
+                                  } else {
+                                    res.json({ status: 1, msg: "data updated" });
+                                  }
+                                }
+                              });
+                          } else {
+                            res.json({ status: 0, msg: "data not updated" });
+                          }
+                        }
+                      });
+                    } else {
+                      res.json({ status: 0, msg: `Weight not updated` });
+                    }
+                  }else {
+                    res.json({ status: 0, msg: `Weight not updated` });
+                  }
+                }else {
+                  res.json({ status: 0, msg: `Weight not updated` });
+                }
+              } else {
+                res.json({ status: 0, msg: `Card_Number ${Card_Number} not exist` });
+              }
+              }
+          });
+  }catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
+});
+
+
 app.get("/history/getcardinfo/:Card_Number", (req, res) => {
   try {
     const Card_Number = req.params.Card_Number ? req.params.Card_Number : '';
