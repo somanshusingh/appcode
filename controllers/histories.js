@@ -357,7 +357,7 @@ module.exports.controller = function (app) {
       }
 });
 
-app.post("/history/getcardinfo/:Card_Number", (req, res) => {
+app.get("/history/getcardinfo/:Card_Number", (req, res) => {
   try {
     const Card_Number = req.params.Card_Number ? req.params.Card_Number : '';
     let findQuery = ``;
@@ -385,7 +385,7 @@ app.post("/history/getcardinfo/:Card_Number", (req, res) => {
   }
 });
 
-app.post("/history/gettripinfo/:Trip_No", (req, res) => {
+app.get("/history/gettripinfo/:Trip_No", (req, res) => {
   try {
     const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
     let findQuery = ``;
