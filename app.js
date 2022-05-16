@@ -114,6 +114,17 @@ app.get("/end-session", (req, res) => {
   }
 });
 
+app.get('/getData', (req, res)=>{
+  try {
+    if(req.query.hasOwnProperty('res') && req.query.res == 1){
+      res.json({status: 0,msg: 'Session Destroyed'});
+    } else {
+      res.json({status: 1,msg: 'CARD'+moment().format("DDMMYYHHMMSS")});
+    }
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+})
 const port = process.env.PORT || 5000;
 const server = app.listen(port, function () {
   var host = server.address().address;
