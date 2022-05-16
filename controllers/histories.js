@@ -47,7 +47,8 @@ module.exports.controller = function (app) {
                 LrNumber : reqObject.LrNumber ? reqObject.LrNumber : '',
                 LrDate  : reqObject.LrDate,
                 Card_Number : reqObject.Card_Number ? reqObject.Card_Number : '',
-                Type:'in'
+                Type:'in',
+                Gate_In_Date_time: moment().format("YYYY-MM-DD hh:mm:ss")
               };
               let sql = `INSERT INTO ${tableName} SET ?`;
               let query = db.query(sql, post, (err) => {
@@ -174,7 +175,8 @@ module.exports.controller = function (app) {
                   LrNumber : reqObject.LrNumber ? reqObject.LrNumber : '',
                   LrDate  : reqObject.LrDate,
                   Card_Number : reqObject.Card_Number ? reqObject.Card_Number : '',
-                  Type : "out"
+                  Type : "out",
+                  Gate_In_Date_time: moment().format("YYYY-MM-DD hh:mm:ss")
                 };
                 let sql = `INSERT INTO ${tableName} SET ?`;
                 let query = db.query(sql, post, (err) => {
@@ -310,11 +312,11 @@ module.exports.controller = function (app) {
                     if (tempGross_Weight !== 0 && tempTare_Weight !== 0 )  {
                       updateQuery = ``;
                     }else if ((tempGross_Weight && tempGross_Weight !== 0) || (tempGross_Weight !== 0 && tempTare_Weight === 0 ))  {
-                      updateQuery = `Tare_Weight = "${Weight}"`;
+                      updateQuery = `Tare_Weight = "${Weight}", Tare_Wgh_Date_time = "${moment().format("YYYY-MM-DD hh:mm:ss")}"`;
                     }else if ((tempTare_Weight && tempTare_Weight !== 0) || ( tempTare_Weight !== 0 && tempGross_Weight === 0 ))   {
-                      updateQuery = `Gross_Weight = "${Weight}"`
+                      updateQuery = `Gross_Weight = "${Weight}", Gross_Wgh_Date_time = "${moment().format("YYYY-MM-DD hh:mm:ss")}"`
                     }else if (tempGross_Weight === 0 && tempTare_Weight === 0 )   {
-                      updateQuery = `Gross_Weight = "${Weight}"`
+                      updateQuery = `Gross_Weight = "${Weight}", Gross_Wgh_Date_time = "${moment().format("YYYY-MM-DD hh:mm:ss")}"`
                     }
                     if (updateQuery !== ``){
                       let tempsql = `UPDATE ${tempTableName} SET ${updateQuery} ${findQuery}`;
@@ -379,11 +381,11 @@ app.get('/history/weight/update/:Card_Number/:Weight', (req, res)=>{
                     if (tempGross_Weight !== 0 && tempTare_Weight !== 0 )  {
                       updateQuery = ``;
                     }else if ((tempGross_Weight && tempGross_Weight !== 0) || (tempGross_Weight !== 0 && tempTare_Weight === 0 ))  {
-                      updateQuery = `Tare_Weight = "${Weight}"`;
+                      updateQuery = `Tare_Weight = "${Weight}", Tare_Wgh_Date_time = "${moment().format("YYYY-MM-DD hh:mm:ss")}"`;
                     }else if ((tempTare_Weight && tempTare_Weight !== 0) || ( tempTare_Weight !== 0 && tempGross_Weight === 0 ))   {
-                      updateQuery = `Gross_Weight = "${Weight}"`
+                      updateQuery = `Gross_Weight = "${Weight}", Gross_Wgh_Date_time = "${moment().format("YYYY-MM-DD hh:mm:ss")}"`
                     }else if (tempGross_Weight === 0 && tempTare_Weight === 0 )   {
-                      updateQuery = `Gross_Weight = "${Weight}"`
+                      updateQuery = `Gross_Weight = "${Weight}", Gross_Wgh_Date_time = "${moment().format("YYYY-MM-DD hh:mm:ss")}"`
                     }
                     if (updateQuery !== ``){
                       let tempsql = `UPDATE ${tableName} SET ${updateQuery} ${findQuery}`;
@@ -480,7 +482,45 @@ app.get("/history/gettripinfo/:Trip_No", (req, res) => {
     res.json({ status: 100, msg: ex.stack });
   }
 });
-
+app.get("/history/card/out/:Card_Number", (req, res) => {
+  try {
+    const Card_Number = req.params.Card_Number ? req.params.Card_Number : '';
+    let findQuery = ``;
+    if (Card_Number !== ''){
+        findQuery = ` where Card_Number = "${Card_Number}" AND (Status != 'close' OR Status != 'completed')`;
+    }
+    let sql = `SELECT * FROM ${tableName}${findQuery}`;
+    let query = db.query(sql, (err, row) => {
+        if (err) {
+        res.json({ status: 0, msg: err });
+        } else {
+        if (row && row.length && row.length > 0) {
+            let Status = `close`;
+            //res.json({ status: 1, msg: row});
+            if (row[0].hasOwnProperty('Gross_Weight') && row[0]['Gross_Weight'] > 0 && row[0].hasOwnProperty('Tare_Weight') && row[0]['Tare_Weight'] > 0){
+              Status = `completed`;
+            }
+            let tempsql = `UPDATE ${tableName} SET Status = '${Status}', Gate_Out_Date_time = '${moment().format("YYYY-MM-DD hh:mm:ss")}'  ${findQuery}`;
+            let nquery = db.query(tempsql, (err, row, fields) => {
+              if (err) {
+                res.json({ status: 0, msg: err });
+              } else {
+                if (row && row.affectedRows && row.affectedRows > 0) {
+                  res.json({ status: 1, msg: `status updated` });
+                } else {
+                  res.json({ status: 0, msg: `status not updated` });
+                }
+              }
+            });
+        } else {
+            res.json({ status: 0, msg: `no record found` });
+        }
+        }
+    });
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
     //code end here
 };
 
