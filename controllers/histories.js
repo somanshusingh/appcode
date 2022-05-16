@@ -89,10 +89,10 @@ module.exports.controller = function (app) {
                 findQuery = ` where Trip_No = "${Trip_No}" AND Type = "in"`;
               }
               if (req.query.hasOwnProperty('VehicleNo') && req.query.VehicleNo !== "") {
-                findQuery = ` where VehicleNo = "${req.query.VehicleNo}" AND Type = "in"`;
+                findQuery = ` where VehicleNo = "${req.query.VehicleNo}"`;
               }
               if (req.query.hasOwnProperty('Card_Number') && req.query.Card_Number !== "") {
-                findQuery = ` where Card_Number = "${req.query.Card_Number}" AND Type = "in"`;
+                findQuery = ` where Card_Number = "${req.query.Card_Number}"`;
               }
               let sql = `SELECT * FROM ${tableName}${findQuery}`;
               let query = db.query(sql, (err, row) => {
