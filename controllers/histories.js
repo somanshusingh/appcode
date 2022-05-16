@@ -26,36 +26,49 @@ module.exports.controller = function (app) {
                 }
               }
               const reqObject = req.body;
-              let post = {
-                Trip_No : ('I'+moment().format('DDMMYYHHMMSS')),
-                VehicleNo : reqObject.VehicleNo,
-                Material_Type : reqObject.Material,
-                Material : reqObject.Material,
-                Issued_By : reqObject.Issued_By,
-                Issued_Date : reqObject.Issued_Date,
-                Driver_Name : reqObject.Driver_Name,
-                Driver_Number : reqObject.Driver_Number,
-                Time : reqObject.Time,
-                Consignee_Name : reqObject.Consignee_Name,
-                Address : reqObject.Address,
-                Gross_Weight : 0,//reqObject.Gross_Weight,
-                Tare_Weight : 0,//reqObject.Tare_Weight,
-                Net_Weight : 0,//reqObject.Net_Weight,
-                Vehicle_Mapping: '',//reqObject.Vehicle_Mapping,
-                Qty_Mt_Weight : reqObject.Qty_Mt_Weight,
-                Status: reqObject.Status ? reqObject.Status : '',
-                LrNumber : reqObject.LrNumber ? reqObject.LrNumber : '',
-                LrDate  : reqObject.LrDate,
-                Card_Number : reqObject.Card_Number ? reqObject.Card_Number : '',
-                Type:'in',
-                Gate_In_Date_time: moment().format("YYYY-MM-DD hh:mm:ss")
-              };
-              let sql = `INSERT INTO ${tableName} SET ?`;
-              let query = db.query(sql, post, (err) => {
+              let newSql = `select * from ${tableName} where (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close") OR (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close")`;
+              let newQuery = db.query(newSql, (err, row) => {
                 if (err) {
-                    res.json({ status: 0, msg: err });
+                  res.json({ status: 0, msg: err });
                 } else {
-                  res.json({ status: 1, msg: "added in history" });
+                  if (row && row.length && row.length > 0) {
+                    res.json({ status: 0, msg: 'Trip already exists'});
+                  } else {
+                    let post = {
+                      Trip_No: "I" + moment().format("DDMMYYHHMMSS"),
+                      VehicleNo: reqObject.VehicleNo,
+                      Material_Type: reqObject.Material,
+                      Material: reqObject.Material,
+                      Issued_By: reqObject.Issued_By,
+                      Issued_Date: reqObject.Issued_Date,
+                      Driver_Name: reqObject.Driver_Name,
+                      Driver_Number: reqObject.Driver_Number,
+                      Time: reqObject.Time,
+                      Consignee_Name: reqObject.Consignee_Name,
+                      Address: reqObject.Address,
+                      Gross_Weight: 0, //reqObject.Gross_Weight,
+                      Tare_Weight: 0, //reqObject.Tare_Weight,
+                      Net_Weight: 0, //reqObject.Net_Weight,
+                      Vehicle_Mapping: "", //reqObject.Vehicle_Mapping,
+                      Qty_Mt_Weight: reqObject.Qty_Mt_Weight,
+                      Status: reqObject.Status ? reqObject.Status : "",
+                      LrNumber: reqObject.LrNumber ? reqObject.LrNumber : "",
+                      LrDate: reqObject.LrDate,
+                      Card_Number: reqObject.Card_Number
+                        ? reqObject.Card_Number
+                        : "",
+                      Type: "in",
+                      Gate_In_Date_time: moment().format("YYYY-MM-DD hh:mm:ss"),
+                    };
+                    let sql = `INSERT INTO ${tableName} SET ?`;
+                    let query = db.query(sql, post, (err) => {
+                      if (err) {
+                        res.json({ status: 0, msg: err });
+                      } else {
+                        res.json({ status: 1, msg: "added in history" });
+                      }
+                    });
+                  }
                 }
               });
             } catch (ex) {
@@ -150,66 +163,89 @@ module.exports.controller = function (app) {
                   }
                 }
                 const reqObject = req.body;
-                let post = {
-                  Trip_No : ('O'+moment().format('DDMMYYHHMMSS')),
-                  VehicleNo : reqObject.VehicleNo,
-                  Make : reqObject.Make,
-                  Model : reqObject.Model,
-                  Insurance_exp_date : reqObject.Insurance_exp_date,
-                  PUC_exp_date : reqObject.PUC_exp_date,
-                  Material_Type : reqObject.Material,
-                  Material : reqObject.Material,
-                  Issued_By : reqObject.Issued_By,
-                  Issued_Date : reqObject.Issued_Date,
-                  Driver_Name : reqObject.Driver_Name,
-                  Driver_Number : reqObject.Driver_Number,
-                  Time : reqObject.Time,
-                  Consignee_Name : reqObject.Consignee_Name,
-                  Address : reqObject.Address,
-                  Gross_Weight : 0,//reqObject.Gross_Weight,
-                  Tare_Weight : 0,//reqObject.Tare_Weight,
-                  Net_Weight : 0,//reqObject.Net_Weight,
-                  Vehicle_Mapping: '',//reqObject.Vehicle_Mapping,
-                  Qty_Mt_Weight : reqObject.Qty_Mt_Weight,
-                  Status: reqObject.Status ? reqObject.Status : '',
-                  LrNumber : reqObject.LrNumber ? reqObject.LrNumber : '',
-                  LrDate  : reqObject.LrDate,
-                  Card_Number : reqObject.Card_Number ? reqObject.Card_Number : '',
-                  Type : "out",
-                  Gate_In_Date_time: moment().format("YYYY-MM-DD hh:mm:ss")
-                };
-                let sql = `INSERT INTO ${tableName} SET ?`;
-                let query = db.query(sql, post, (err) => {
+                let newSql = `select * from ${tableName} where (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close") OR (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close")`;
+                let newQuery = db.query(newSql, (err, row) => {
                   if (err) {
-                      res.json({ status: 0, msg: err });
+                    res.json({ status: 0, msg: err });
                   } else {
-                    res.json({ status: 1, msg: "added in history" });
+                    if (row && row.length && row.length > 0) {
+                      res.json({ status: 0, msg: "Trip already exists" });
+                    } else {
+                      let post = {
+                        Trip_No: "O" + moment().format("DDMMYYHHMMSS"),
+                        VehicleNo: reqObject.VehicleNo,
+                        Make: reqObject.Make,
+                        Model: reqObject.Model,
+                        Insurance_exp_date: reqObject.Insurance_exp_date,
+                        PUC_exp_date: reqObject.PUC_exp_date,
+                        Material_Type: reqObject.Material,
+                        Material: reqObject.Material,
+                        Issued_By: reqObject.Issued_By,
+                        Issued_Date: reqObject.Issued_Date,
+                        Driver_Name: reqObject.Driver_Name,
+                        Driver_Number: reqObject.Driver_Number,
+                        Time: reqObject.Time,
+                        Consignee_Name: reqObject.Consignee_Name,
+                        Address: reqObject.Address,
+                        Gross_Weight: 0, //reqObject.Gross_Weight,
+                        Tare_Weight: 0, //reqObject.Tare_Weight,
+                        Net_Weight: 0, //reqObject.Net_Weight,
+                        Vehicle_Mapping: "", //reqObject.Vehicle_Mapping,
+                        Qty_Mt_Weight: reqObject.Qty_Mt_Weight,
+                        Status: reqObject.Status ? reqObject.Status : "",
+                        LrNumber: reqObject.LrNumber ? reqObject.LrNumber : "",
+                        LrDate: reqObject.LrDate,
+                        Card_Number: reqObject.Card_Number
+                          ? reqObject.Card_Number
+                          : "",
+                        Type: "out",
+                        Gate_In_Date_time: moment().format(
+                          "YYYY-MM-DD hh:mm:ss"
+                        ),
+                      };
+                      let sql = `INSERT INTO ${tableName} SET ?`;
+                      let query = db.query(sql, post, (err) => {
+                        if (err) {
+                          res.json({ status: 0, msg: err });
+                        } else {
+                          res.json({ status: 1, msg: "added in history" });
+                        }
+                      });
+                      if (
+                        reqObject.hasOwnProperty("Vehicle") &&
+                        reqObject.Vehicle === false
+                      ) {
+                        let objVehicleData = {
+                          data: {
+                            VehicleNo: reqObject.VehicleNo,
+                            Make: reqObject.Make,
+                            Model: reqObject.Model,
+                            Insurance_exp_date: reqObject.Insurance_exp_date,
+                            PUC_exp_date: reqObject.PUC_exp_date,
+                            VehicleType: "",
+                            Created_By: reqObject.Issued_By,
+                            Modified_By: reqObject.Issued_By,
+                            Source: "OutBound",
+                          },
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                        };
+                        const url_api =
+                          config.environment.weburl + "/vehicle/registration";
+                        var Client = require("node-rest-client").Client;
+                        var client = new Client();
+                        client.post(
+                          url_api,
+                          objVehicleData,
+                          function (data, response) {
+                            console.log(data);
+                          }
+                        );
+                      }
+                    }
                   }
                 });
-                if(reqObject.hasOwnProperty('Vehicle') && reqObject.Vehicle === false){
-                  let objVehicleData = {
-                    data: {
-                      "VehicleNo": reqObject.VehicleNo,
-                      "Make": reqObject.Make,
-                      "Model": reqObject.Model,
-                      "Insurance_exp_date": reqObject.Insurance_exp_date,
-                      "PUC_exp_date": reqObject.PUC_exp_date,
-                      "VehicleType": "",
-                      "Created_By": reqObject.Issued_By,
-                      "Modified_By": reqObject.Issued_By,
-                      "Source": "OutBound"
-                    },
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                  };
-                  const url_api = config.environment.weburl + "/vehicle/registration";
-                  var Client = require("node-rest-client").Client;
-                  var client = new Client();
-                  client.post(url_api, objVehicleData, function (data, response) {
-                     console.log(data);
-                  });
-                }
               } catch (ex) {
                 res.json({ status: 100, msg: ex.stack });
               }
@@ -487,7 +523,7 @@ app.get("/history/card/out/:Card_Number", (req, res) => {
     const Card_Number = req.params.Card_Number ? req.params.Card_Number : '';
     let findQuery = ``;
     if (Card_Number !== ''){
-        findQuery = ` where Card_Number = "${Card_Number}" AND (Status != 'close' OR Status != 'completed')`;
+        findQuery = ` where (Card_Number = "${Card_Number}" AND Status != 'close') OR (Card_Number = "${Card_Number}" AND Status != 'completed')`;
     }
     let sql = `SELECT * FROM ${tableName}${findQuery}`;
     let query = db.query(sql, (err, row) => {
