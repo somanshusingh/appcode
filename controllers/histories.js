@@ -32,40 +32,55 @@ module.exports.controller = function (app) {
                   res.json({ status: 0, msg: err });
                 } else {
                   if (row && row.length && row.length > 0) {
-                    res.json({ status: 0, msg: 'Trip already exists'});
+                    res.json({ status: 0, msg: "Trip already exists" });
                   } else {
-                    let post = {
-                      Trip_No: "I" + moment().format("DDMMYYHHMMSS"),
-                      VehicleNo: reqObject.VehicleNo,
-                      Material_Type: reqObject.Material,
-                      Material: reqObject.Material,
-                      Issued_By: reqObject.Issued_By,
-                      Issued_Date: reqObject.Issued_Date,
-                      Driver_Name: reqObject.Driver_Name,
-                      Driver_Number: reqObject.Driver_Number,
-                      Time: reqObject.Time,
-                      Consignee_Name: reqObject.Consignee_Name,
-                      Address: reqObject.Address,
-                      Gross_Weight: 0, //reqObject.Gross_Weight,
-                      Tare_Weight: 0, //reqObject.Tare_Weight,
-                      Net_Weight: 0, //reqObject.Net_Weight,
-                      Vehicle_Mapping: "", //reqObject.Vehicle_Mapping,
-                      Qty_Mt_Weight: reqObject.Qty_Mt_Weight,
-                      Status: reqObject.Status ? reqObject.Status : "",
-                      LrNumber: reqObject.LrNumber ? reqObject.LrNumber : "",
-                      LrDate: reqObject.LrDate,
-                      Card_Number: reqObject.Card_Number
-                        ? reqObject.Card_Number
-                        : "",
-                      Type: "in",
-                      Gate_In_Date_time: moment().format("YYYY-MM-DD hh:mm:ss"),
-                    };
-                    let sql = `INSERT INTO ${tableName} SET ?`;
-                    let query = db.query(sql, post, (err) => {
+                    let newSql = `select * from ${tableName} where (Card_Number = '${reqObject.Card_Number}' AND Status != "close") OR (Card_Number = '${reqObject.Card_Number}' AND Status != "completed")`;
+                    let newQuery = db.query(newSql, (err, row) => {
                       if (err) {
                         res.json({ status: 0, msg: err });
                       } else {
-                        res.json({ status: 1, msg: "added in history" });
+                        if (row && row.length && row.length > 0) {
+                          res.json({ status: 0, msg: "Trip already exists for given Card Number" });
+                        } else {
+                          let post = {
+                            Trip_No: "I" + moment().format("DDMMYYHHMMSS"),
+                            VehicleNo: reqObject.VehicleNo,
+                            Material_Type: reqObject.Material,
+                            Material: reqObject.Material,
+                            Issued_By: reqObject.Issued_By,
+                            Issued_Date: reqObject.Issued_Date,
+                            Driver_Name: reqObject.Driver_Name,
+                            Driver_Number: reqObject.Driver_Number,
+                            Time: reqObject.Time,
+                            Consignee_Name: reqObject.Consignee_Name,
+                            Address: reqObject.Address,
+                            Gross_Weight: 0, //reqObject.Gross_Weight,
+                            Tare_Weight: 0, //reqObject.Tare_Weight,
+                            Net_Weight: 0, //reqObject.Net_Weight,
+                            Vehicle_Mapping: "", //reqObject.Vehicle_Mapping,
+                            Qty_Mt_Weight: reqObject.Qty_Mt_Weight,
+                            Status: reqObject.Status ? reqObject.Status : "",
+                            LrNumber: reqObject.LrNumber
+                              ? reqObject.LrNumber
+                              : "",
+                            LrDate: reqObject.LrDate,
+                            Card_Number: reqObject.Card_Number
+                              ? reqObject.Card_Number
+                              : "",
+                            Type: "in",
+                            Gate_In_Date_time: moment().format(
+                              "YYYY-MM-DD hh:mm:ss"
+                            ),
+                          };
+                          let sql = `INSERT INTO ${tableName} SET ?`;
+                          let query = db.query(sql, post, (err) => {
+                            if (err) {
+                              res.json({ status: 0, msg: err });
+                            } else {
+                              res.json({ status: 1, msg: "added in history" });
+                            }
+                          });
+                        }
                       }
                     });
                   }
@@ -118,25 +133,39 @@ module.exports.controller = function (app) {
   app.post("/history/inhouse_transport/update", (req, res) => {
     try {
       const reqObject = req.body;
-      let Trip_No = reqObject.Trip_No;
-      let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
-      //let updateQuery = `Issued_Date = '${current_date}',`;
-      let updateQuery = ``;
-      for (const k in reqObject){
-          if (k !== "Issued_Date" || k !== "Modified_By"){
-            updateQuery += `${k} = '${reqObject[k]}',`
-          }
-      }
-      updateQuery = updateQuery.substring(0, updateQuery.length - 1);
-      let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE Trip_No = '${Trip_No}' AND Type = "in"`;
-      let query = db.query(sql, (err, row) => {
+      let newSql = `select * from ${tableName} where (Card_Number = '${reqObject.Card_Number}' AND Status != "close") OR (Card_Number = '${reqObject.Card_Number}' AND Status != "completed")`;
+      let newQuery = db.query(newSql, (err, row) => {
         if (err) {
           res.json({ status: 0, msg: err });
         } else {
-          if (row && row.affectedRows && row.affectedRows > 0) {
-            res.json({ status: 1, msg: "date updated" });
+          if (row && row.length && row.length > 0) {
+            res.json({
+              status: 0,
+              msg: "Trip already exists for given Card Number",
+            });
           } else {
-            res.json({ status: 0, msg: "data not updated" });
+            let Trip_No = reqObject.Trip_No;
+            let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
+            //let updateQuery = `Issued_Date = '${current_date}',`;
+            let updateQuery = ``;
+            for (const k in reqObject) {
+              if (k !== "Issued_Date" || k !== "Modified_By") {
+                updateQuery += `${k} = '${reqObject[k]}',`;
+              }
+            }
+            updateQuery = updateQuery.substring(0, updateQuery.length - 1);
+            let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE Trip_No = '${Trip_No}'`;
+            let query = db.query(sql, (err, row) => {
+              if (err) {
+                res.json({ status: 0, msg: err });
+              } else {
+                if (row && row.affectedRows && row.affectedRows > 0) {
+                  res.json({ status: 1, msg: "date updated" });
+                } else {
+                  res.json({ status: 0, msg: "data not updated" });
+                }
+              }
+            });
           }
         }
       });
@@ -171,78 +200,96 @@ module.exports.controller = function (app) {
                     if (row && row.length && row.length > 0) {
                       res.json({ status: 0, msg: "Trip already exists" });
                     } else {
-                      let post = {
-                        Trip_No: "O" + moment().format("DDMMYYHHMMSS"),
-                        VehicleNo: reqObject.VehicleNo,
-                        Make: reqObject.Make,
-                        Model: reqObject.Model,
-                        Insurance_exp_date: reqObject.Insurance_exp_date,
-                        PUC_exp_date: reqObject.PUC_exp_date,
-                        Material_Type: reqObject.Material,
-                        Material: reqObject.Material,
-                        Issued_By: reqObject.Issued_By,
-                        Issued_Date: reqObject.Issued_Date,
-                        Driver_Name: reqObject.Driver_Name,
-                        Driver_Number: reqObject.Driver_Number,
-                        Time: reqObject.Time,
-                        Consignee_Name: reqObject.Consignee_Name,
-                        Address: reqObject.Address,
-                        Gross_Weight: 0, //reqObject.Gross_Weight,
-                        Tare_Weight: 0, //reqObject.Tare_Weight,
-                        Net_Weight: 0, //reqObject.Net_Weight,
-                        Vehicle_Mapping: "", //reqObject.Vehicle_Mapping,
-                        Qty_Mt_Weight: reqObject.Qty_Mt_Weight,
-                        Status: reqObject.Status ? reqObject.Status : "",
-                        LrNumber: reqObject.LrNumber ? reqObject.LrNumber : "",
-                        LrDate: reqObject.LrDate,
-                        Card_Number: reqObject.Card_Number
-                          ? reqObject.Card_Number
-                          : "",
-                        Type: "out",
-                        Gate_In_Date_time: moment().format(
-                          "YYYY-MM-DD hh:mm:ss"
-                        ),
-                      };
-                      let sql = `INSERT INTO ${tableName} SET ?`;
-                      let query = db.query(sql, post, (err) => {
+                      let newSql = `select * from ${tableName} where (Card_Number = '${reqObject.Card_Number}' AND Status != "close") OR (Card_Number = '${reqObject.Card_Number}' AND Status != "completed")`;
+                      let newQuery = db.query(newSql, (err, row) => {
                         if (err) {
                           res.json({ status: 0, msg: err });
                         } else {
-                          res.json({ status: 1, msg: "added in history" });
+                          if (row && row.length && row.length > 0) {
+                            res.json({ status: 0, msg: "Trip already exists for given Card Number" });
+                          } else {
+                            let post = {
+                              Trip_No: "O" + moment().format("DDMMYYHHMMSS"),
+                              VehicleNo: reqObject.VehicleNo,
+                              Make: reqObject.Make,
+                              Model: reqObject.Model,
+                              Insurance_exp_date: reqObject.Insurance_exp_date,
+                              PUC_exp_date: reqObject.PUC_exp_date,
+                              Material_Type: reqObject.Material,
+                              Material: reqObject.Material,
+                              Issued_By: reqObject.Issued_By,
+                              Issued_Date: reqObject.Issued_Date,
+                              Driver_Name: reqObject.Driver_Name,
+                              Driver_Number: reqObject.Driver_Number,
+                              Time: reqObject.Time,
+                              Consignee_Name: reqObject.Consignee_Name,
+                              Address: reqObject.Address,
+                              Gross_Weight: 0, //reqObject.Gross_Weight,
+                              Tare_Weight: 0, //reqObject.Tare_Weight,
+                              Net_Weight: 0, //reqObject.Net_Weight,
+                              Vehicle_Mapping: "", //reqObject.Vehicle_Mapping,
+                              Qty_Mt_Weight: reqObject.Qty_Mt_Weight,
+                              Status: reqObject.Status ? reqObject.Status : "",
+                              LrNumber: reqObject.LrNumber
+                                ? reqObject.LrNumber
+                                : "",
+                              LrDate: reqObject.LrDate,
+                              Card_Number: reqObject.Card_Number
+                                ? reqObject.Card_Number
+                                : "",
+                              Type: "out",
+                              Gate_In_Date_time: moment().format(
+                                "YYYY-MM-DD hh:mm:ss"
+                              ),
+                            };
+                            let sql = `INSERT INTO ${tableName} SET ?`;
+                            let query = db.query(sql, post, (err) => {
+                              if (err) {
+                                res.json({ status: 0, msg: err });
+                              } else {
+                                res.json({
+                                  status: 1,
+                                  msg: "added in history",
+                                });
+                              }
+                            });
+                            if (
+                              reqObject.hasOwnProperty("Vehicle") &&
+                              reqObject.Vehicle === false
+                            ) {
+                              let objVehicleData = {
+                                data: {
+                                  VehicleNo: reqObject.VehicleNo,
+                                  Make: reqObject.Make,
+                                  Model: reqObject.Model,
+                                  Insurance_exp_date:
+                                    reqObject.Insurance_exp_date,
+                                  PUC_exp_date: reqObject.PUC_exp_date,
+                                  VehicleType: "",
+                                  Created_By: reqObject.Issued_By,
+                                  Modified_By: reqObject.Issued_By,
+                                  Source: "OutBound",
+                                },
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                              };
+                              const url_api =
+                                config.environment.weburl +
+                                "/vehicle/registration";
+                              var Client = require("node-rest-client").Client;
+                              var client = new Client();
+                              client.post(
+                                url_api,
+                                objVehicleData,
+                                function (data, response) {
+                                  console.log(data);
+                                }
+                              );
+                            }
+                          }
                         }
                       });
-                      if (
-                        reqObject.hasOwnProperty("Vehicle") &&
-                        reqObject.Vehicle === false
-                      ) {
-                        let objVehicleData = {
-                          data: {
-                            VehicleNo: reqObject.VehicleNo,
-                            Make: reqObject.Make,
-                            Model: reqObject.Model,
-                            Insurance_exp_date: reqObject.Insurance_exp_date,
-                            PUC_exp_date: reqObject.PUC_exp_date,
-                            VehicleType: "",
-                            Created_By: reqObject.Issued_By,
-                            Modified_By: reqObject.Issued_By,
-                            Source: "OutBound",
-                          },
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                        };
-                        const url_api =
-                          config.environment.weburl + "/vehicle/registration";
-                        var Client = require("node-rest-client").Client;
-                        var client = new Client();
-                        client.post(
-                          url_api,
-                          objVehicleData,
-                          function (data, response) {
-                            console.log(data);
-                          }
-                        );
-                      }
                     }
                   }
                 });
@@ -293,25 +340,39 @@ module.exports.controller = function (app) {
   app.post("/history/outside_transport/update", (req, res) => {
     try {
       const reqObject = req.body;
-      let Trip_No = reqObject.Trip_No;
-      let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
-      //let updateQuery = `Issued_Date = '${current_date}',`;
-      let updateQuery = ``;
-      for (const k in reqObject){
-          if (k !== "Issued_Date"){
-            updateQuery += `${k} = '${reqObject[k]}',`
-          }
-      }
-      updateQuery = updateQuery.substring(0, updateQuery.length - 1);
-      let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE Trip_No = '${Trip_No}' AND Type="out"`;
-      let query = db.query(sql, (err, row) => {
+      let newSql = `select * from ${tableName} where (Card_Number = '${reqObject.Card_Number}' AND Status != "close") OR (Card_Number = '${reqObject.Card_Number}' AND Status != "completed")`;
+      let newQuery = db.query(newSql, (err, row) => {
         if (err) {
           res.json({ status: 0, msg: err });
         } else {
-          if (row && row.affectedRows && row.affectedRows > 0) {
-            res.json({ status: 1, msg: "date updated" });
+          if (row && row.length && row.length > 0) {
+            res.json({
+              status: 0,
+              msg: "Trip already exists for given Card Number",
+            });
           } else {
-            res.json({ status: 0, msg: "data not updated" });
+            let Trip_No = reqObject.Trip_No;
+            let current_date = moment().format("YYYY-MM-DD hh:mm:ss");
+            //let updateQuery = `Issued_Date = '${current_date}',`;
+            let updateQuery = ``;
+            for (const k in reqObject) {
+              if (k !== "Issued_Date") {
+                updateQuery += `${k} = '${reqObject[k]}',`;
+              }
+            }
+            updateQuery = updateQuery.substring(0, updateQuery.length - 1);
+            let sql = `UPDATE ${tableName} SET ${updateQuery} WHERE Trip_No = '${Trip_No}'`;
+            let query = db.query(sql, (err, row) => {
+              if (err) {
+                res.json({ status: 0, msg: err });
+              } else {
+                if (row && row.affectedRows && row.affectedRows > 0) {
+                  res.json({ status: 1, msg: "date updated" });
+                } else {
+                  res.json({ status: 0, msg: "data not updated" });
+                }
+              }
+            });
           }
         }
       });
