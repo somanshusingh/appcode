@@ -26,7 +26,7 @@ module.exports.controller = function (app) {
                 }
               }
               const reqObject = req.body;
-              let newSql = `select * from ${tableName} where (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close") OR (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close")`;
+              let newSql = `select * from ${tableName} where (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close") OR (VehicleNo = '${reqObject.VehicleNo}' AND Status != "completed")`;
               let newQuery = db.query(newSql, (err, row) => {
                 if (err) {
                   res.json({ status: 0, msg: err });
@@ -163,7 +163,7 @@ module.exports.controller = function (app) {
                   }
                 }
                 const reqObject = req.body;
-                let newSql = `select * from ${tableName} where (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close") OR (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close")`;
+                let newSql = `select * from ${tableName} where (VehicleNo = '${reqObject.VehicleNo}' AND Status != "close") OR (VehicleNo = '${reqObject.VehicleNo}' AND Status != "completed")`;
                 let newQuery = db.query(newSql, (err, row) => {
                   if (err) {
                     res.json({ status: 0, msg: err });
