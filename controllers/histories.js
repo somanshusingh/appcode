@@ -11,7 +11,7 @@ module.exports.controller = function (app) {
   app.post('/history/inhouse_transport', (req, res)=>{
       try{
         let sql =
-            `CREATE TABLE ${tableName}(Trip_No VARCHAR(15) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20),Gross_Wgh_Date_time DATE, Tare_Wgh_Date_time DATE, Gate_In_Date_time DATE, Gate_Out_Date_time DATE, Remark_Field VARCHAR(200), Front_image json, Rear_Image json, Type VARCHAR(10), PRIMARY KEY(Trip_No))`;
+            `CREATE TABLE ${tableName}(Trip_No VARCHAR(15) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20),Gross_Wgh_Date_time DATE, Tare_Wgh_Date_time DATE, Gate_In_Date_time DATE, Gate_Out_Date_time DATE, Remark_Field VARCHAR(200), Front_Image VARCHAR(50), Rear_Image VARCHAR(50), Type VARCHAR(10), PRIMARY KEY(Trip_No))`;
           db.query(sql, (err) => {
             try {
               if (err) {
@@ -42,8 +42,9 @@ module.exports.controller = function (app) {
                         if (row && row.length && row.length > 0) {
                           res.json({ status: 0, msg: "Trip already exists for given Card Number" });
                         } else {
+                          let tempTrip = moment().format("DDMMYYHHMMSS");
                           let post = {
-                            Trip_No: "I" + moment().format("DDMMYYHHMMSS"),
+                            Trip_No: "I" + tempTrip,
                             VehicleNo: reqObject.VehicleNo,
                             Make: reqObject.Make ? reqObject.Make : '',
                             Model: reqObject.Model ? reqObject.Model : '',
@@ -72,6 +73,8 @@ module.exports.controller = function (app) {
                               ? reqObject.Card_Number
                               : "",
                             Type: "in",
+                            Front_Image : tempTrip+'_Front',
+                            Rear_Image : tempTrip+'_Rear',
                             Gate_In_Date_time: moment().format(
                               "YYYY-MM-DD hh:mm:ss"
                             ),
@@ -181,7 +184,7 @@ module.exports.controller = function (app) {
   app.post('/history/outside_transport', (req, res)=>{
         try{
           let sql =
-              `CREATE TABLE ${tableName}(Trip_No VARCHAR(15) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20),Gross_Wgh_Date_time DATE, Tare_Wgh_Date_time DATE, Gate_In_Date_time DATE, Gate_Out_Date_time DATE, Remark_Field VARCHAR(200), Front_image json, Rear_Image json, Type VARCHAR(10), PRIMARY KEY(Trip_No))`;
+              `CREATE TABLE ${tableName}(Trip_No VARCHAR(15) NOT NULL, VehicleNo VARCHAR(15), Make VARCHAR(25), Model VARCHAR(25), Insurance_exp_date Date, PUC_exp_date Date, Material_Type VARCHAR(25),Material VARCHAR(50), Issued_By VARCHAR(50), Issued_Date DATE, Driver_Name VARCHAR(50), Driver_Number BIGINT, Time VARCHAR(15), Consignee_Name VARCHAR(50), Address VARCHAR(150), Gross_Weight DOUBLE, Tare_Weight DOUBLE, Net_Weight DOUBLE, Vehicle_Mapping VARCHAR(15), Qty_Mt_Weight DOUBLE, Status VARCHAR(10), LrNumber VARCHAR(10), LrDate DATE, Card_Number VARCHAR(20),Gross_Wgh_Date_time DATE, Tare_Wgh_Date_time DATE, Gate_In_Date_time DATE, Gate_Out_Date_time DATE, Remark_Field VARCHAR(200), Front_Image VARCHAR(50), Rear_Image VARCHAR(50), Type VARCHAR(10), PRIMARY KEY(Trip_No))`;
             db.query(sql, (err) => {
               try {
                 if (err) {
@@ -212,8 +215,9 @@ module.exports.controller = function (app) {
                           if (row && row.length && row.length > 0) {
                             res.json({ status: 0, msg: "Trip already exists for given Card Number" });
                           } else {
+                            let tempTrip = moment().format("DDMMYYHHMMSS");
                             let post = {
-                              Trip_No: "O" + moment().format("DDMMYYHHMMSS"),
+                              Trip_No: "O" + tempTrip,
                               VehicleNo: reqObject.VehicleNo,
                               Make: reqObject.Make,
                               Model: reqObject.Model,
@@ -242,6 +246,8 @@ module.exports.controller = function (app) {
                                 ? reqObject.Card_Number
                                 : "",
                               Type: "out",
+                              Front_Image : tempTrip+'_Front',
+                              Rear_Image : tempTrip+'_Rear',
                               Gate_In_Date_time: moment().format(
                                 "YYYY-MM-DD hh:mm:ss"
                               ),
