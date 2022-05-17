@@ -158,9 +158,9 @@ module.exports.controller = function (app) {
     try {
       //if(req.params && req.params.VehicleNo){
       const VehicleNo = req.params.VehicleNo ? req.params.VehicleNo : "";
-      let findQuery = ` where VehicleNo = "${VehicleNo}"`;
+      let findQuery = ` where VehicleNo = "${VehicleNo}" ORDER BY Modified_On DESC`;
       if (VehicleNo === "") {
-        findQuery = "";
+        findQuery = ` ORDER BY Modified_On DESC`;
       }
       let sql = `SELECT * FROM ${tableName}${findQuery}`;
       let query = db.query(sql, (err, row) => {

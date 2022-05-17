@@ -106,9 +106,9 @@ module.exports.controller = function (app) {
       try{
           //if(req.params && req.params.VehicleNo){
               const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
-              let findQuery = ` where Type = "in"`;
+              let findQuery = ` ORDER BY Gate_In_Date_time DESC`;
               if (Trip_No !== ''){
-                findQuery = ` where Trip_No = "${Trip_No}" AND Type = "in"`;
+                findQuery = ` where Trip_No = "${Trip_No}"`;
               }
               if (req.query.hasOwnProperty('VehicleNo') && req.query.VehicleNo !== "") {
                 findQuery = ` where VehicleNo = "${req.query.VehicleNo}"`;
@@ -316,7 +316,7 @@ module.exports.controller = function (app) {
       try{
           //if(req.params && req.params.VehicleNo){
             const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
-            let findQuery = ` where Type = "out"`;
+            let findQuery = ` ORDER BY Gate_In_Date_time DESC`;
             if (Trip_No !== ''){
               findQuery = ` where Trip_No = "${Trip_No}"`;
             }

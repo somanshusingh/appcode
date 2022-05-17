@@ -282,9 +282,9 @@ module.exports.controller = function (app) {
       try{
           //if(req.params && req.params.VehicleNo){
               const UserID = req.params.UserID ? req.params.UserID : '';
-              let findQuery = ` where UserID = "${UserID}"`;
+              let findQuery = ` where UserID = "${UserID}" ORDER BY Modified_On DESC`;
               if (UserID === ''){
-                findQuery = "";
+                findQuery = ` ORDER BY Modified_On DESC`;
               }
               let sql = `SELECT * FROM ${tableName}${findQuery}`;
               let query = db.query(sql, (err, row) => {
