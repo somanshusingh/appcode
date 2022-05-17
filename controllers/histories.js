@@ -26,7 +26,7 @@ module.exports.controller = function (app) {
                 }
               }
               const reqObject = req.body;
-              let newSql = `select * from ${tableName} where VehicleNo = '${reqObject.VehicleNo}' AND (NOT Status != "close" AND NOT Status = "completed")`;
+              let newSql = `select * from ${tableName} where VehicleNo = '${reqObject.VehicleNo}' AND (NOT Status = "close" AND NOT Status = "completed")`;
               let newQuery = db.query(newSql, (err, row) => {
                 if (err) {
                   res.json({ status: 0, msg: err });
@@ -192,7 +192,7 @@ module.exports.controller = function (app) {
                   }
                 }
                 const reqObject = req.body;
-                let newSql = `select * from ${tableName} where VehicleNo = '${reqObject.VehicleNo}' AND (NOT Status != "close" AND NOT Status = "completed")`;
+                let newSql = `select * from ${tableName} where VehicleNo = '${reqObject.VehicleNo}' AND (NOT Status = "close" AND NOT Status = "completed")`;
                 let newQuery = db.query(newSql, (err, row) => {
                   if (err) {
                     res.json({ status: 0, msg: err });
@@ -200,7 +200,7 @@ module.exports.controller = function (app) {
                     if (row && row.length && row.length > 0) {
                       res.json({ status: 0, msg: "Trip already exists" });
                     } else {
-                      let newSql = `select * from ${tableName} where Card_Number = '${reqObject.Card_Number}' AND (NOT Status != "close" AND NOT Status = "completed")`;
+                      let newSql = `select * from ${tableName} where Card_Number = '${reqObject.Card_Number}' AND (NOT Status = "close" AND NOT Status = "completed")`;
                       let newQuery = db.query(newSql, (err, row) => {
                         if (err) {
                           res.json({ status: 0, msg: err });
@@ -340,7 +340,7 @@ module.exports.controller = function (app) {
   app.post("/history/outside_transport/update", (req, res) => {
     try {
       const reqObject = req.body;
-      let newSql = `select * from ${tableName} where Card_Number = '${reqObject.Card_Number}' AND (NOT Status != "close" AND NOT Status = "completed")`;
+      let newSql = `select * from ${tableName} where Card_Number = '${reqObject.Card_Number}' AND (NOT Status = "close" AND NOT Status = "completed")`;
       let newQuery = db.query(newSql, (err, row) => {
         if (err) {
           res.json({ status: 0, msg: err });
