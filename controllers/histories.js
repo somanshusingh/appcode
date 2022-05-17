@@ -2,6 +2,8 @@ const path = require("path");
 const moment = require("moment");
 const config = require("config");
 const appRoot = path.dirname(require.main.filename);
+const fs = require("fs");
+const pdf = require('html-pdf');
 
 // get SQL DB driver connection
 const db = require("../models/db");
@@ -106,7 +108,7 @@ module.exports.controller = function (app) {
       try{
           //if(req.params && req.params.VehicleNo){
               const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
-              let findQuery = ` ORDER BY Gate_In_Date_time DESC`;
+              let findQuery = ` where Type = 'in' ORDER BY Gate_In_Date_time,Time DESC`;
               if (Trip_No !== ''){
                 findQuery = ` where Trip_No = "${Trip_No}"`;
               }
@@ -316,7 +318,7 @@ module.exports.controller = function (app) {
       try{
           //if(req.params && req.params.VehicleNo){
             const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
-            let findQuery = ` ORDER BY Gate_In_Date_time DESC`;
+            let findQuery = ` where Type = 'out' ORDER BY Gate_In_Date_time,Time DESC`;
             if (Trip_No !== ''){
               findQuery = ` where Trip_No = "${Trip_No}"`;
             }
@@ -471,7 +473,7 @@ app.get('/history/weight/update/:Card_Number/:Weight', (req, res)=>{
       //if(req.params && req.params.VehicleNo){
           const Weight = (req.params.Weight && isNaN(req.params.Weight) === false) ? parseFloat(req.params.Weight) : 0;
           const Card_Number = req.params.Card_Number ? req.params.Card_Number : '';
-          let findQuery = ` where Card_Number = "${Card_Number}"`;
+          let findQuery = ` where Card_Number = "${Card_Number}" AND Status = 'In plant'`;
           let sql = `SELECT * FROM ${tableName}${findQuery}`;
           let query = db.query(sql, (err, row) => {
               if (err) {
@@ -507,33 +509,65 @@ app.get('/history/weight/update/:Card_Number/:Weight', (req, res)=>{
                                 res.json({ status: 0, msg: err });
                                 } else {
                                   if (row && row.length && row.length > 0) {
-                                    res.json({ status: 1, msg: "data updated", "print_data":row[0]});
+                                    let printData = row[0];
+                                    //res.json({ status: 1, msg: "data updated", "print_data":row[0]});
+                                    let html_file_path = appRoot + "/tmp/recipt.html";
+                                    let htmlPol = fs.readFileSync(html_file_path, 'utf8');
+                                    let replacedata={
+                                      "___trip_no___":printData.hasOwnProperty('Trip_No') ? printData.Trip_No : '',
+                                      "___material_type___":printData.hasOwnProperty('Material') ? printData.Material : '',
+                                      "___consignee_name___":printData.hasOwnProperty('Consignee_Name') ? printData.Consignee_Name : '',
+                                      "___vehicle_no___":printData.hasOwnProperty('VehicleNo') ? printData.VehicleNo : '',
+                                      "___vehicle_type___":printData.hasOwnProperty('VehicleType') ? printData.VehicleType : '',
+                                      "___net_weight___":printData.hasOwnProperty('Net_Weight') ? printData.Net_Weight : 0,
+                                      "___gross_weight___":printData.hasOwnProperty('Gross_Weight') ? printData.Gross_Weight : 0,
+                                      "___gross_date___":printData.hasOwnProperty('Gross_Wgh_Date_time') ? moment(printData.Gross_Wgh_Date_time).utcOffset("+05:30").format('YYYY-MM-DD') : '',
+                                      "___gross_time___":printData.hasOwnProperty('Gross_Wgh_Date_time') ? moment(printData.Gross_Wgh_Date_time).utcOffset("+05:30").format('HH:MM') : '',
+                                      "___tare_weight___":printData.hasOwnProperty('Tare_Weight') ? printData.Tare_Weight : '',
+                                      "___tare_date___":printData.hasOwnProperty('Tare_Wgh_Date_time') ? moment(printData.Tare_Wgh_Date_time).utcOffset("+05:30").format('YYYY-MM-DD') : '',
+                                      "___tare_time___":printData.hasOwnProperty('Tare_Wgh_Date_time') ? moment(printData.Tare_Wgh_Date_time).utcOffset("+05:30").format('HH:MM') : ''
+                                    };
+                                    var replaceString = htmlPol.toString();
+                                    var regex;
+                                    for (var key in replacedata) {
+                                        if (replacedata.hasOwnProperty(key)) {
+                                            var val = replacedata[key];
+                                            regex = new RegExp(key, "g");
+                                            replaceString = replaceString.replace(regex, val);
+                                        }
+                                    }
+                                    htmlPol = replaceString;
+                                    //var request_html_file = fs.writeFileSync(html_pdf_file_path, htmlPol);
+                                    let options = { format: 'A4',  width: '900px',  height : '2000px', zoomFactor : .5 };
+                                    pdf.create(htmlPol).toBuffer(function(err, buffer){
+                                      res.json({ MT_WB_Post_Rec :{SUCCESS: 1, DATA_PRINT: buffer.toString('base64') }});
+                                    });
                                   } else {
-                                    res.json({ status: 1, msg: "data updated" });
+                                    res.json({ MT_WB_Post_Rec :{SUCCESS: 0, DATA_PRINT: `error in updating` }});
                                   }
                                 }
                               });
                           } else {
-                            res.json({ status: 0, msg: "data not updated" });
+                            res.json({ MT_WB_Post_Rec :{SUCCESS: 0, DATA_PRINT: `data not updated` }});
                           }
                         }
                       });
                     } else {
-                      res.json({ status: 0, msg: `Weight not updated` });
+                      res.json({ MT_WB_Post_Rec :{SUCCESS: 0, DATA_PRINT: `Weight not updated` }});
                     }
                   }else {
-                    res.json({ status: 0, msg: `Weight not updated` });
+                    res.json({ MT_WB_Post_Rec :{SUCCESS: 0, DATA_PRINT: `Weight not updated` }});
                   }
                 }else {
-                  res.json({ status: 0, msg: `Weight not updated` });
+                  res.json({ MT_WB_Post_Rec :{SUCCESS: 0, DATA_PRINT: `Weight not updated` }});
                 }
               } else {
-                res.json({ status: 0, msg: `Card_Number ${Card_Number} not exist` });
+                res.json({MT_WB_Post_Rec : { SUCCESS: 0, DATA_PRINT: `Card_Number ${Card_Number} not exist` }});
               }
               }
           });
   }catch (ex) {
-      res.json({ status: 100, msg: ex.stack });
+      res.json({MT_WB_Post_Rec : { SUCCESS: 100, DATA_PRINT: ex.stack }});
     }
 });
 
@@ -629,5 +663,6 @@ app.get("/history/card/out/:Card_Number", (req, res) => {
   }
 });
     //code end here
+
 };
 
