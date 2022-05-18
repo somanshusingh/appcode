@@ -540,7 +540,7 @@ app.get('/history/weight/update/:Card_Number/:Weight', (req, res)=>{
                                     //var request_html_file = fs.writeFileSync(html_pdf_file_path, htmlPol);
                                     let options = { format: 'A4',  width: '900px',  height : '2000px', zoomFactor : .5 };
                                     pdf.create(htmlPol).toBuffer(function(err, buffer){
-                                      res.json({ MT_WB_Post_Rec :{SUCCESS: 1, DATA_PRINT: buffer.toString('base64') }});
+                                      res.json({ MT_WB_Post_Rec :{SUCCESS: 1, DATA_PRINT: buffer }});
                                     });
                                   } else {
                                     res.json({ MT_WB_Post_Rec :{SUCCESS: 0, DATA_PRINT: `error in updating` }});
@@ -652,6 +652,63 @@ app.get("/history/card/out/:Card_Number", (req, res) => {
                   res.json({ status: 0, msg: `status not updated` });
                 }
               }
+            });
+        } else {
+            res.json({ status: 0, msg: `no record found` });
+        }
+        }
+    });
+  } catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+
+app.get("/history/print_trip/:Trip_No", (req, res) => {
+  try {
+    const Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
+    let findQuery = ``;
+    if (Trip_No !== ''){
+        findQuery = ` where Trip_No = "${Trip_No}"`;
+    }
+    let sql = `SELECT * FROM ${tableName}${findQuery}`;
+    let query = db.query(sql, (err, row) => {
+        if (err) {
+        res.json({ status: 0, msg: err });
+        } else {
+        if (row && row.length && row.length > 0) {
+            //res.json({ status: 1, msg: row});
+            let printData = row[0];
+            let html_file_path = appRoot + "/tmp/recipt.html";
+            let htmlPol = fs.readFileSync(html_file_path, 'utf8');
+            let replacedata={
+              "___trip_no___":printData.hasOwnProperty('Trip_No') ? printData.Trip_No : '',
+              "___material_type___":printData.hasOwnProperty('Material') ? printData.Material : '',
+              "___consignee_name___":printData.hasOwnProperty('Consignee_Name') ? printData.Consignee_Name : '',
+              "___vehicle_no___":printData.hasOwnProperty('VehicleNo') ? printData.VehicleNo : '',
+              "___vehicle_type___":printData.hasOwnProperty('VehicleType') ? printData.VehicleType : '',
+              "___net_weight___":printData.hasOwnProperty('Net_Weight') ? printData.Net_Weight : 0,
+              "___gross_weight___":printData.hasOwnProperty('Gross_Weight') ? printData.Gross_Weight : 0,
+              "___gross_date___":printData.hasOwnProperty('Gross_Wgh_Date_time') ? moment(printData.Gross_Wgh_Date_time).utcOffset("+05:30").format('YYYY-MM-DD') : '',
+              "___gross_time___":printData.hasOwnProperty('Gross_Wgh_Date_time') ? moment(printData.Gross_Wgh_Date_time).utcOffset("+05:30").format('HH:MM') : '',
+              "___tare_weight___":printData.hasOwnProperty('Tare_Weight') ? printData.Tare_Weight : '',
+              "___tare_date___":printData.hasOwnProperty('Tare_Wgh_Date_time') ? moment(printData.Tare_Wgh_Date_time).utcOffset("+05:30").format('YYYY-MM-DD') : '',
+              "___tare_time___":printData.hasOwnProperty('Tare_Wgh_Date_time') ? moment(printData.Tare_Wgh_Date_time).utcOffset("+05:30").format('HH:MM') : ''
+            };
+            var replaceString = htmlPol.toString();
+            var regex;
+            for (var key in replacedata) {
+                if (replacedata.hasOwnProperty(key)) {
+                    var val = replacedata[key];
+                    regex = new RegExp(key, "g");
+                    replaceString = replaceString.replace(regex, val);
+                }
+            }
+            htmlPol = replaceString;
+            //var request_html_file = fs.writeFileSync(html_pdf_file_path, htmlPol);
+            let options = { format: 'A4',  width: '900px',  height : '2000px', zoomFactor : .5 };
+            pdf.create(htmlPol).toStream(function(err, stream){
+              stream.pipe(fs.createWriteStream(appRoot+ '/tmp/pdf/'+printData.Trip_No+'.pdf'));
+              res.json({ status: 1, msg: printData.Trip_No+'.pdf' });
             });
         } else {
             res.json({ status: 0, msg: `no record found` });

@@ -84,6 +84,13 @@ app.all('/Image/*', function (req, res) {
   res.sendFile(path.join(__dirname + urlpath));
 });
 
+app.all('/pdf/*', function (req, res) {
+  var urlpath = req.url;
+  urlpath = decodeURI(urlpath);
+  urlpath = urlpath.toString().replace('pdf', 'tmp/pdf');
+  res.sendFile(path.join(__dirname + urlpath));
+});
+
 app.all("/assets/:folder/:file", function (req, res) {
   var urlpath = req.url;
   var folder = req.params.folder;
