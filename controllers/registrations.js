@@ -81,7 +81,7 @@ module.exports.controller = function (app) {
   app.post("/registration/user", (req, res) => {
     try {
       let sql =
-        `CREATE TABLE ${tableName}(UserId VARCHAR(50) NOT NULL, Password VARCHAR(25) NOT NULL, FirstName VARCHAR(50), LastName VARCHAR(50),Mobile BIGINT, Email VARCHAR(50),Address VARCHAR(150),Role VARCHAR(10), Status VARCHAR(10), Created_By VARCHAR(50),Created_On DATE,Modified_By VARCHAR(50),Modified_On DATE, Allowed_Menu json, EmpCode INT, User_Type VARCHAR(20), PRIMARY KEY(UserId))`;
+        `CREATE TABLE ${tableName}(UserId VARCHAR(50) NOT NULL, Password VARCHAR(25) NOT NULL, FirstName VARCHAR(50), LastName VARCHAR(50),Mobile BIGINT, Email VARCHAR(50),Address VARCHAR(150),Role VARCHAR(10), Status VARCHAR(10), Created_By VARCHAR(50),Created_On datetime,Modified_By VARCHAR(50),Modified_On datetime, Allowed_Menu json, EmpCode INT, User_Type VARCHAR(20), PRIMARY KEY(UserId))`;
       db.query(sql, (err) => {
         try {
           if (err) {

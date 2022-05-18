@@ -97,7 +97,7 @@ module.exports.controller = function (app) {
 
   app.post("/vehicle/registration", (req, res) => {
     try {
-      let sql = `CREATE TABLE ${tableName}(VehicleNo VARCHAR(15) NOT NULL, Make VARCHAR(25), Model VARCHAR(25),Insurance_exp_date DATE, PUC_exp_date DATE, VehicleType VARCHAR(25), Status VARCHAR(10), Source VARCHAR(10), Created_By VARCHAR(50), Created_On DATE, Modified_By VARCHAR(50), Modified_On DATE, Document json, PRIMARY KEY(VehicleNo))`;
+      let sql = `CREATE TABLE ${tableName}(VehicleNo VARCHAR(15) NOT NULL, Make VARCHAR(25), Model VARCHAR(25),Insurance_exp_date datetime, PUC_exp_date datetime, VehicleType VARCHAR(25), Status VARCHAR(10), Source VARCHAR(10), Created_By VARCHAR(50), Created_On datetime, Modified_By VARCHAR(50), Modified_On datetime, Document json, PRIMARY KEY(VehicleNo))`;
       db.query(sql, (err) => {
         try {
           if (err) {
