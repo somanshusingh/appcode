@@ -4,6 +4,7 @@ const config = require("config");
 const appRoot = path.dirname(require.main.filename);
 const fs = require("fs");
 const pdf = require('html-pdf');
+var excel = require('excel4node');
 
 // get SQL DB driver connection
 const db = require("../models/db");
@@ -719,6 +720,160 @@ app.get("/history/print_trip/:Trip_No", (req, res) => {
     res.json({ status: 100, msg: ex.stack });
   }
 });
+app.post('/history/report', (req, res)=>{
+  try{
+      const reqObject = req.body;
+      let fromDate = req.body.fromDate;
+      let toDate = req.body.toDate;
+      let status = req.body.status;
+      let findQuery="";
+      if(status == "completed")
+      {
+        findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND Status = 'completed'`;
+      }
+      else if(status == "close")
+      {
+        findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND Status = 'close'`;
+      }
+      else if(status == "In plant")
+      {
+        findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND Status = 'In plant'`;
+      }
+      else if(status == 'In transit')
+      {
+        findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND Status = 'In transit'`;
+      }
+      else 
+      {
+        findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND (Status = 'close' or Status = 'completed' or Status = 'In plant' or Status = 'In transit')`;
+      }
+        let sql = `SELECT * FROM ${tableName}${findQuery}`;
+        console.log(sql);
+        let query = db.query(sql, (err, row) => {
+            if (err) {
+            res.json({ status: 0, msg: err });
+            } else {
+            if (row && row.length && row.length > 0) {
+                res.json({ status: 1, msg: row});
+            } else {
+                res.json({ status: 0, msg: `No trip available` });
+            }
+            }
+        });
+}catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+app.post("/history/downloadReport", (req, res) => {
+  try {
+    const reqObject = req.body;
+    let fromDate = req.body.fromDate;
+    let toDate = req.body.toDate;
+    let status = req.body.status;
+    let findQuery="";
+    if(status == "completed")
+    {
+      findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND Status = 'completed'`;
+    }
+    else if(status == "close")
+    {
+      findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND Status = 'close'`;
+    }
+    else if(status == "In plant")
+    {
+      findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND Status = 'In plant'`;
+    }
+    else if(status == 'In transit')
+    {
+      findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND Status = 'In transit'`;
+    }
+    else 
+    {
+      findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND (Status = 'close' or Status = 'completed' or Status = 'In plant' or Status = 'In transit')`;
+    }
+      let sql = `SELECT * FROM ${tableName}${findQuery}`;
+      let query = db.query(sql, (err, row) => {
+          if (err) {
+              res.json({ status: 0, msg: err });
+          } else {
+              if (row && row.length && row.length > 0) {
+                  var workbook = new excel.Workbook();
+                  var worksheet = workbook.addWorksheet('Sheet 1');
+                  worksheet.cell(1, 1).string('Address');
+                  worksheet.cell(1, 2).string('Card_Number');
+                  worksheet.cell(1, 3).string('Consignee_Name');
+                  worksheet.cell(1, 4).string('Driver_Name');
+                  worksheet.cell(1, 5).string('Driver_Number');
+                  worksheet.cell(1, 6).string('Gate_In_Date_time');
+                  worksheet.cell(1, 7).string('Gate_Out_Date_time');
+                  worksheet.cell(1, 8).string('Gross_Weight');
+                  worksheet.cell(1, 9).string('Gross_Wgh_Date_time');
+                  worksheet.cell(1, 10).string('Insurance_exp_date');
+                  worksheet.cell(1, 11).string('Issued_By');
+                  worksheet.cell(1, 12).string('Issued_Date');
+                  worksheet.cell(1, 13).string('LrDate');
+                  worksheet.cell(1, 14).string('LrNumber');
+                  worksheet.cell(1, 15).string('Make');
+                  worksheet.cell(1, 16).string('Material');
+                  worksheet.cell(1, 17).string('Material_Type');
+                  worksheet.cell(1, 18).string('Model');
+                  worksheet.cell(1, 19).string('Net_Weight');
+                  worksheet.cell(1, 20).string('PUC_exp_date');
+                  worksheet.cell(1, 21).string('Qty_Mt_Weight');
+                  worksheet.cell(1, 22).string('Remark_Field');
+                  worksheet.cell(1, 23).string('Status');
+                  worksheet.cell(1, 24).string('Tare_Weight');
+                  worksheet.cell(1, 25).string('Tare_Wgh_Date_time');
+                  worksheet.cell(1, 26).string('Time');
+                  worksheet.cell(1, 27).string('Trip_No');
+                  worksheet.cell(1, 28).string('Type');
+                  worksheet.cell(1, 29).string('VehicleNo');
+                  worksheet.cell(1, 30).string('Vehicle_Mapping');
+                  for (var i in row) {
+                      var a = i - 0
+                      worksheet.cell(a + 2, 1).string(row[i]['Address'] ? row[i]['Address'].toString() : "");
+                      worksheet.cell(a + 2, 2).string(row[i]['Card_Number'] ? row[i]['Card_Number'].toString() : "");
+                      worksheet.cell(a + 2, 3).string(row[i]['Consignee_Name'] ? row[i]['Consignee_Name'].toString() : "");
+                      worksheet.cell(a + 2, 4).string(row[i]['Driver_Name']?row[i]['Driver_Name'].toString() : "");
+                      worksheet.cell(a + 2, 5).string(row[i]['Driver_Number']?row[i]['Driver_Number'].toString() : "");
+                      worksheet.cell(a + 2, 6).string(row[i]['Gate_In_Date_time']?row[i]['Gate_In_Date_time'].toString() : "");
+                      worksheet.cell(a + 2, 7).string(row[i]['Gate_Out_Date_time'] ? row[i]['Gate_Out_Date_time'].toString() : "");
+                      worksheet.cell(a + 2, 8).string(row[i]['Gross_Weight']?row[i]['Gross_Weight'].toString() : "");
+                      worksheet.cell(a + 2, 9).string(row[i]['Gross_Wgh_Date_time']?row[i]['Gross_Wgh_Date_time'].toString() : "");
+                      worksheet.cell(a + 2, 10).string(row[i]['Insurance_exp_date']?row[i]['Insurance_exp_date'].toString() : "");
+                      worksheet.cell(a + 2, 11).string(row[i]['Issued_By']?row[i]['Issued_By'].toString() : "");
+                      worksheet.cell(a + 2, 12).string(row[i]['Issued_Date']?row[i]['Issued_Date'].toString() : "");
+                      worksheet.cell(a + 2, 13).string(row[i]['LrDate']?row[i]['LrDate'].toString() : "");
+                      worksheet.cell(a + 2, 14).string(row[i]['LrNumber']?row[i]['LrNumber'].toString() : "");
+                      worksheet.cell(a + 2, 15).string(row[i]['Make']?row[i]['Make'].toString() : "");
+                      worksheet.cell(a + 2, 16).string(row[i]['Material']?row[i]['Material'].toString() : "");
+                      worksheet.cell(a + 2, 17).string(row[i]['Material_Type']?row[i]['Material_Type'].toString() : "");
+                      worksheet.cell(a + 2, 18).string(row[i]['Model']?row[i]['Model'].toString() : "");
+                      worksheet.cell(a + 2, 19).string(row[i]['Net_Weight']?row[i]['Net_Weight'].toString() : "");
+                      worksheet.cell(a + 2, 20).string(row[i]['PUC_exp_date']?row[i]['PUC_exp_date'].toString() : "");
+                      worksheet.cell(a + 2, 21).string(row[i]['Qty_Mt_Weight']?row[i]['Qty_Mt_Weight'].toString() : "");
+                      worksheet.cell(a + 2, 22).string(row[i]['Remark_Field']?row[i]['Remark_Field'].toString() : "");
+                      worksheet.cell(a + 2, 23).string(row[i]['Status']?row[i]['Status'].toString() : "");
+                      worksheet.cell(a + 2, 24).string(row[i]['Tare_Weight']?row[i]['Tare_Weight'].toString() : "");
+                      worksheet.cell(a + 2, 25).string(row[i]['Tare_Wgh_Date_time']?row[i]['Tare_Wgh_Date_time'].toString() : "");
+                      worksheet.cell(a + 2, 26).string(row[i]['Time']?row[i]['Time'].toString() : "");
+                      worksheet.cell(a + 2, 27).string(row[i]['Trip_No']?row[i]['Trip_No'].toString() : "");
+                      worksheet.cell(a + 2, 28).string(row[i]['Type']?row[i]['Type'].toString() : "");
+                      worksheet.cell(a + 2, 29).string(row[i]['VehicleNo']?row[i]['VehicleNo'].toString() : "");
+                      worksheet.cell(a + 2, 30).string(row[i]['Vehicle_Mapping']?row[i]['Vehicle_Mapping'].toString() : "");
+                      workbook.write(appRoot + '/tmp/report/' + req.body.fromDate+'_'+req.body.toDate +'_'+ req.body.status+'.xlsx');
+                  }
+                  res.json({ status: 1, msg: 'Report Generated Successfully' });
+              } else {
+                  res.json({ status: 0, msg: 'No data found' });
+              }
+          }
+      })
+  } catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+  }
+})
+
     //code end here
 
 };

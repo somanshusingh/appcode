@@ -11,6 +11,7 @@
     "csv-parse": "^5.0.3",
     "csv-parser": "^3.0.0",
     "ejs": "^3.1.6",
+    "excel4node": "^1.7.2",
     "express": "^4.17.1",
     "express-mysql-session": "^2.1.8",
     "express-session": "^1.17.2",
