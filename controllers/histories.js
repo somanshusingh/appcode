@@ -874,6 +874,36 @@ app.post("/history/downloadReport", (req, res) => {
   }
 })
 
+app.get('/history/getFile/:Trip_No?', (req, res)=>{
+  try{
+      //if(req.params && req.params.VehicleNo){
+          let Trip_No = req.params.Trip_No ? req.params.Trip_No : '';
+          var ftpClient = require('ftp-client');
+          var config_ftp = {
+            host: 'ftpupload.net', // required
+            user: 'epiz_31541721', // Optional. Use empty username for anonymous access.
+            password: 'uMmiauoQDy', // Required if username is not empty, except when requiresPassword: false
+            port: 21
+          };
+          var options_ftp = {
+              logging: 'basic'
+          };
+          var client_ftp = new ftpClient(config_ftp, options_ftp);
+          console.log('-------------------------------');
+          console.log(Trip_No);
+          client_ftp.connect(function () {
+            client_ftp.download('/htdocs', appRoot + "/tmp/ftp/", {overwrite: 'all'}, function (result) {
+                console.log(JSON.stringifyresult);
+            });
+        
+        });
+        //http://localhost:5000/Image/tmp/vehicles/6J61T5vbNczt6iNzfTntsQsk.png
+        res.json({ status: 1, msg:"Success" });
+  }catch (ex) {
+      res.json({ status: 100, msg: ex.stack });
+    }
+});
+
     //code end here
 
 };
