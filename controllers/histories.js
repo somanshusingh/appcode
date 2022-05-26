@@ -629,7 +629,7 @@ app.get("/history/card/out/:Card_Number", (req, res) => {
     const Card_Number = req.params.Card_Number ? req.params.Card_Number : '';
     let findQuery = ``;
     if (Card_Number !== ''){
-        findQuery = ` where (Card_Number = "${Card_Number}" AND Status != 'close') OR (Card_Number = "${Card_Number}" AND Status != 'completed')`;
+        findQuery = ` where Card_Number = "${Card_Number}" AND ( Not Status = 'close' AND Not Status = 'completed')`;
     }
     let sql = `SELECT * FROM ${tableName}${findQuery}`;
     let query = db.query(sql, (err, row) => {
