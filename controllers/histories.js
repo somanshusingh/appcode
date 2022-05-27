@@ -763,7 +763,7 @@ app.post('/history/report', (req, res)=>{
     res.json({ status: 100, msg: ex.stack });
   }
 });
-app.post('/history/getData', (req, res)=>{
+app.get('/history/getData', (req, res)=>{
   try{
         let sql = `SELECT * FROM ${tableName}`;
         console.log(sql);
