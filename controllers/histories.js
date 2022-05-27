@@ -540,7 +540,7 @@ app.get('/history/weight/update/:Card_Number/:Weight', (req, res)=>{
                                     //var request_html_file = fs.writeFileSync(html_pdf_file_path, htmlPol);
                                     let options = { format: 'A4',  width: '900px',  height : '2000px', zoomFactor : .5 };
                                     pdf.create(htmlPol).toBuffer(function(err, buffer){
-                                      res.json({ MT_WB_Post_Rec :{SUCCESS: 1, DATA_PRINT: buffer }});
+                                      res.json({ MT_WB_Post_Rec :{SUCCESS: 1, DATA_PRINT: buffer.toString('base64') }});
                                     });
                                   } else {
                                     res.json({ MT_WB_Post_Rec :{SUCCESS: 0, DATA_PRINT: `error in updating` }});
@@ -747,6 +747,25 @@ app.post('/history/report', (req, res)=>{
         findQuery =  ` where   Gate_In_Date_time >= Date('${fromDate}') AND Gate_In_Date_time <= Date('${toDate}')  AND (Status = 'close' or Status = 'completed' or Status = 'In plant' or Status = 'In transit')`;
       }
         let sql = `SELECT * FROM ${tableName}${findQuery}`;
+        console.log(sql);
+        let query = db.query(sql, (err, row) => {
+            if (err) {
+            res.json({ status: 0, msg: err });
+            } else {
+            if (row && row.length && row.length > 0) {
+                res.json({ status: 1, msg: row});
+            } else {
+                res.json({ status: 0, msg: `No trip available` });
+            }
+            }
+        });
+}catch (ex) {
+    res.json({ status: 100, msg: ex.stack });
+  }
+});
+app.post('/history/getData', (req, res)=>{
+  try{
+        let sql = `SELECT * FROM ${tableName}`;
         console.log(sql);
         let query = db.query(sql, (err, row) => {
             if (err) {
